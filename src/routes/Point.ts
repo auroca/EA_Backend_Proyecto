@@ -1,6 +1,11 @@
 import express from 'express';
 import controller from '../controllers/Point';
 import { Schemas, ValidateJoi } from '../middleware/Joi';
+import {
+    authenticateToken,
+    authorizePointOwnerOrAdmin,
+    authorizePointRouteOwnerOrAdmin
+} from '../middleware/auth';
 
 const router = express.Router();
 
@@ -105,12 +110,16 @@ const router = express.Router();
  *           example: 1
  */
 
+router.use(authenticateToken);
+
 /**
  * @openapi
  * /points:
  *   get:
  *     summary: List all Points
  *     tags: [points]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: limit
@@ -129,8 +138,33 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: OK. If limit and page are omitted, returns the full list.
+ *       401:
+ *         description: Unauthorized
  */
 router.get('/', controller.readAll);
+
+/**
+ * @openapi
+ * /points/route/{routeId}:
+ *   get:
+ *     summary: List all Points for a Route
+ *     tags: [points]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: routeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Route ObjectId
+ *     responses:
+ *       200:
+ *         description: OK
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/route/:routeId', controller.readByRoute);
 
 /**
  * @openapi
@@ -138,6 +172,8 @@ router.get('/', controller.readAll);
  *   get:
  *     summary: Get a Point by ID
  *     tags: [points]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: pointId
@@ -150,27 +186,10 @@ router.get('/', controller.readAll);
  *         description: OK
  *       404:
  *         description: Not found
+ *       401:
+ *         description: Unauthorized
  */
 router.get('/:pointId', controller.readPoint);
-
-/**
- * @openapi
- * /points/route/{routeId}:
- *   get:
- *     summary: List all Points for a Route
- *     tags: [points]
- *     parameters:
- *       - in: path
- *         name: routeId
- *         required: true
- *         schema:
- *           type: string
- *         description: Route ObjectId
- *     responses:
- *       200:
- *         description: OK
- */
-router.get('/route/:routeId', controller.readByRoute);
 
 /**
  * @openapi
@@ -178,6 +197,8 @@ router.get('/route/:routeId', controller.readByRoute);
  *   post:
  *     summary: Create a Point
  *     tags: [points]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -189,8 +210,12 @@ router.get('/route/:routeId', controller.readByRoute);
  *         description: Created
  *       422:
  *         description: Validation failed (Joi)
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  */
-router.post('/', ValidateJoi(Schemas.Point.create), controller.createPoint);
+router.post('/', ValidateJoi(Schemas.Point.create), authorizePointRouteOwnerOrAdmin, controller.createPoint);
 
 /**
  * @openapi
@@ -198,6 +223,8 @@ router.post('/', ValidateJoi(Schemas.Point.create), controller.createPoint);
  *   put:
  *     summary: Update a Point by ID
  *     tags: [points]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: pointId
@@ -218,8 +245,12 @@ router.post('/', ValidateJoi(Schemas.Point.create), controller.createPoint);
  *         description: Not found
  *       422:
  *         description: Validation failed (Joi)
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  */
-router.put('/:pointId', ValidateJoi(Schemas.Point.update), controller.updatePoint);
+router.put('/:pointId', authorizePointOwnerOrAdmin, ValidateJoi(Schemas.Point.update), controller.updatePoint);
 
 /**
  * @openapi
@@ -227,6 +258,8 @@ router.put('/:pointId', ValidateJoi(Schemas.Point.update), controller.updatePoin
  *   delete:
  *     summary: Delete a Point by ID
  *     tags: [points]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: pointId
@@ -239,7 +272,11 @@ router.put('/:pointId', ValidateJoi(Schemas.Point.update), controller.updatePoin
  *         description: OK
  *       404:
  *         description: Not found
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  */
-router.delete('/:pointId', controller.deletePoint);
+router.delete('/:pointId', authorizePointOwnerOrAdmin, controller.deletePoint);
 
 export default router;

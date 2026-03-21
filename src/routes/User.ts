@@ -1,6 +1,7 @@
 import express from 'express';
 import controller from '../controllers/User';
 import { Schemas, ValidateJoi } from '../middleware/Joi';
+import { authenticateToken, authorizeRoles } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -37,6 +38,10 @@ const router = express.Router();
  *         enabled:
  *           type: boolean
  *           example: true
+ *         role:
+ *           type: string
+ *           enum: [admin, user]
+ *           example: "user"
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -92,55 +97,11 @@ const router = express.Router();
  *         enabled:
  *           type: boolean
  *           example: true
- */
-
-/**
- * @openapi
- * /users:
- *   get:
- *     summary: List all Users
- *     tags: [users]
- *     parameters:
- *       - in: query
- *         name: limit
- *         required: false
- *         schema:
- *           type: integer
- *           enum: [10, 25, 50]
- *         description: Page size. Use together with page to enable pagination.
- *       - in: query
- *         name: page
- *         required: false
- *         schema:
- *           type: integer
- *           minimum: 1
- *         description: Page number. Use together with limit to enable pagination.
- *     responses:
- *       200:
- *         description: OK. If limit and page are omitted, returns the full list.
- */
-router.get('/', controller.readAll);
-
-/**
- * @openapi
- * /users/{userId}:
- *   get:
- *     summary: Get a User by ID
- *     tags: [users]
- *     parameters:
- *       - in: path
- *         name: userId
- *         required: true
- *         schema:
+ *         role:
  *           type: string
- *         description: User ObjectId
- *     responses:
- *       200:
- *         description: OK
- *       404:
- *         description: Not found
+ *           enum: [admin, user]
+ *           example: "admin"
  */
-router.get('/:userId', controller.readUser);
 
 /**
  * @openapi
@@ -162,6 +123,68 @@ router.get('/:userId', controller.readUser);
  */
 router.post('/', ValidateJoi(Schemas.User.create), controller.createUser);
 
+router.use(authenticateToken);
+router.use(authorizeRoles('admin'));
+
+/**
+ * @openapi
+ * /users:
+ *   get:
+ *     summary: List all Users
+ *     tags: [users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           enum: [10, 25, 50]
+ *         description: Page size. Use together with page to enable pagination.
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Page number. Use together with limit to enable pagination.
+ *     responses:
+ *       200:
+ *         description: OK. If limit and page are omitted, returns the full list.
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
+router.get('/', controller.readAll);
+
+/**
+ * @openapi
+ * /users/{userId}:
+ *   get:
+ *     summary: Get a User by ID
+ *     tags: [users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ObjectId
+ *     responses:
+ *       200:
+ *         description: OK
+ *       404:
+ *         description: Not found
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
+router.get('/:userId', controller.readUser);
 
 /**
  * @openapi
@@ -169,6 +192,8 @@ router.post('/', ValidateJoi(Schemas.User.create), controller.createUser);
  *   put:
  *     summary: Update a User by ID
  *     tags: [users]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
@@ -189,6 +214,10 @@ router.post('/', ValidateJoi(Schemas.User.create), controller.createUser);
  *         description: Not found
  *       422:
  *         description: Validation failed (Joi)
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  */
 router.put('/:userId', ValidateJoi(Schemas.User.update), controller.updateUser);
 
@@ -198,6 +227,8 @@ router.put('/:userId', ValidateJoi(Schemas.User.update), controller.updateUser);
  *   delete:
  *     summary: Delete a User by ID
  *     tags: [users]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
@@ -210,6 +241,10 @@ router.put('/:userId', ValidateJoi(Schemas.User.update), controller.updateUser);
  *         description: OK
  *       404:
  *         description: Not found
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  */
 router.delete('/:userId', controller.deleteUser);
 

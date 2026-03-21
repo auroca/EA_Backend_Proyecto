@@ -4,9 +4,23 @@ import { parsePagination } from '../library/Pagination';
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
-        const savedUser = await UserService.createUser(req.body);
+        const payload = {
+            name: req.body.name,
+            surname: req.body.surname,
+            username: req.body.username,
+            email: req.body.email,
+            password: req.body.password,
+            enabled: true,
+            role: 'user' as const
+        };
+
+        const savedUser = await UserService.createUser(payload);
         return res.status(201).json(savedUser);
-    } catch (error) {
+    } catch (error: any) {
+        if (error?.code === 11000) {
+            return res.status(409).json({ message: 'Username or email already exists' });
+        }
+
         return res.status(500).json({ error });
     }
 };
@@ -50,7 +64,11 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
         return updatedUser
             ? res.status(200).json(updatedUser)
             : res.status(404).json({ message: 'not found' });
-    } catch (error) {
+    } catch (error: any) {
+        if (error?.code === 11000) {
+            return res.status(409).json({ message: 'Username or email already exists' });
+        }
+
         return res.status(500).json({ error });
     }
 };
