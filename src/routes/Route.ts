@@ -1,6 +1,7 @@
 import express from 'express';
 import controller from '../controllers/Route';
 import { Schemas, ValidateJoi } from '../middleware/Joi';
+import { authenticateToken, authorizeRouteOwnerOrAdmin } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -66,7 +67,6 @@ const router = express.Router();
  *         - distance
  *         - duration
  *         - difficulty
- *         - userId
  *       properties:
  *         name:
  *           type: string
@@ -95,9 +95,6 @@ const router = express.Router();
  *           items:
  *             type: string
  *           example: ["montaña", "naturaleza"]
- *         userId:
- *           type: string
- *           example: "65f1c2a1b2c3d4e5f6789001"
  *
  *     RouteUpdate:
  *       type: object
@@ -129,11 +126,9 @@ const router = express.Router();
  *           items:
  *             type: string
  *           example: ["montaña", "naturaleza"]
-
- *         userId:
- *           type: string
- *           example: "65f1c2a1b2c3d4e5f6789001"
  */
+
+router.use(authenticateToken);
 
 /**
  * @openapi
@@ -141,6 +136,8 @@ const router = express.Router();
  *   get:
  *     summary: List all Routes
  *     tags: [routes]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: limit
@@ -159,6 +156,8 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: OK. If limit and page are omitted, returns the full list.
+ *       401:
+ *         description: Unauthorized
  */
 router.get('/', controller.readAll);
 
@@ -168,6 +167,8 @@ router.get('/', controller.readAll);
  *   get:
  *     summary: Get a Route by ID
  *     tags: [routes]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: routeId
@@ -180,8 +181,10 @@ router.get('/', controller.readAll);
  *         description: OK
  *       404:
  *         description: Not found
+ *       401:
+ *         description: Unauthorized
  */
-router.get('/:RouteId', controller.readRoute);
+router.get('/:routeId', controller.readRoute);
 
 /**
  * @openapi
@@ -189,6 +192,8 @@ router.get('/:RouteId', controller.readRoute);
  *   post:
  *     summary: Create a Route
  *     tags: [routes]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -200,6 +205,8 @@ router.get('/:RouteId', controller.readRoute);
  *         description: Created
  *       422:
  *         description: Validation failed (Joi)
+ *       401:
+ *         description: Unauthorized
  */
 router.post('/', ValidateJoi(Schemas.Route.create), controller.createRoute);
 
@@ -209,6 +216,8 @@ router.post('/', ValidateJoi(Schemas.Route.create), controller.createRoute);
  *   put:
  *     summary: Update a Route by ID
  *     tags: [routes]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: routeId
@@ -229,8 +238,12 @@ router.post('/', ValidateJoi(Schemas.Route.create), controller.createRoute);
  *         description: Not found
  *       422:
  *         description: Validation failed (Joi)
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  */
-router.put('/:RouteId', ValidateJoi(Schemas.Route.update), controller.updateRoute);
+router.put('/:routeId', authorizeRouteOwnerOrAdmin, ValidateJoi(Schemas.Route.update), controller.updateRoute);
 
 /**
  * @openapi
@@ -238,6 +251,8 @@ router.put('/:RouteId', ValidateJoi(Schemas.Route.update), controller.updateRout
  *   delete:
  *     summary: Delete a Route by ID
  *     tags: [routes]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: routeId
@@ -250,7 +265,11 @@ router.put('/:RouteId', ValidateJoi(Schemas.Route.update), controller.updateRout
  *         description: OK
  *       404:
  *         description: Not found
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  */
-router.delete('/:RouteId', controller.deleteRoute);
+router.delete('/:routeId', authorizeRouteOwnerOrAdmin, controller.deleteRoute);
 
 export default router;

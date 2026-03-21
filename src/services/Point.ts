@@ -28,7 +28,6 @@ const getAllPoints = async (pagination?: PaginationParams): Promise<ListResult<I
     }
 
     const { limit, page } = pagination;
-
     const skip = (page - 1) * limit;
 
     const [data, total] = await Promise.all([

@@ -15,6 +15,13 @@ export const ValidateJoi = (schema: ObjectSchema) => {
 };
 
 export const Schemas = {
+    Auth: {
+        login: Joi.object({
+            email: Joi.string().email().required(),
+            password: Joi.string().min(6).required()
+        })
+    },
+
     User: {
         create: Joi.object({
             name: Joi.string().required(),
@@ -29,7 +36,8 @@ export const Schemas = {
             username: Joi.string().optional(),
             email: Joi.string().email().optional(),
             password: Joi.string().min(6).optional(),
-            enabled: Joi.boolean().optional()
+            enabled: Joi.boolean().optional(),
+            role: Joi.string().valid('admin', 'user').optional()
         }).min(1)
     },
 
@@ -42,10 +50,7 @@ export const Schemas = {
             distance: Joi.number().required(),
             duration: Joi.number().required(),
             difficulty: Joi.string().valid('easy', 'medium', 'hard').required(),
-            tags: Joi.array().items(Joi.string()).optional(),
-            userId: Joi.string()
-                .pattern(/^[0-9a-fA-F]{24}$/)
-                .required()
+            tags: Joi.array().items(Joi.string()).optional()
         }),
 
         update: Joi.object({
@@ -56,10 +61,7 @@ export const Schemas = {
             distance: Joi.number().optional(),
             duration: Joi.number().optional(),
             difficulty: Joi.string().valid('easy', 'medium', 'hard').optional(),
-            tags: Joi.array().items(Joi.string()).optional(),
-            userId: Joi.string()
-                .pattern(/^[0-9a-fA-F]{24}$/)
-                .optional()
+            tags: Joi.array().items(Joi.string()).optional()
         }).min(1)
     },
 

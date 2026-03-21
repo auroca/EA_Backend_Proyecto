@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema } from 'mongoose';
 import bcrypt from 'bcrypt';
+import { UserRole } from './JwtPayload';
 
 export interface IUser {
     name: string;
@@ -8,6 +9,7 @@ export interface IUser {
     email: string;
     password: string;
     enabled: boolean;
+    role: UserRole;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -23,7 +25,13 @@ const UserSchema: Schema = new Schema(
         username: { type: String, required: true, unique: true },
         email: { type: String, required: true, unique: true },
         password: { type: String, required: true },
-        enabled: { type: Boolean, default: true }
+        enabled: { type: Boolean, default: true },
+        role: {
+            type: String,
+            enum: ['admin', 'user'],
+            default: 'user',
+            required: true
+        }
     },
     {
         timestamps: true,
@@ -42,9 +50,6 @@ const UserSchema: Schema = new Schema(
     }
 );
 
-/**
- * Virtual: rutas creadas por el usuario
- */
 UserSchema.virtual('routes', {
     ref: 'Route',
     localField: '_id',
@@ -52,9 +57,6 @@ UserSchema.virtual('routes', {
     select: 'name _id'
 });
 
-/**
- * Hook: hashea la contraseña antes de guardar
- */
 UserSchema.pre('save', async function (next) {
     const user = this as IUserModel;
 
@@ -71,9 +73,6 @@ UserSchema.pre('save', async function (next) {
     }
 });
 
-/**
- * Método para comparar contraseña
- */
 UserSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
     return await bcrypt.compare(candidatePassword, this.password);
 };

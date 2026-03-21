@@ -2,12 +2,13 @@ import express from 'express';
 import http from 'http';
 import mongoose from 'mongoose';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import { config } from './config/config';
 import Logging from './library/Logging';
 import UserRoutes from './routes/User';
 import RouteRoutes from './routes/Route';
 import PointRoutes from './routes/Point';
-import AuthRoutes from './routes/Auth';
+import authRoutes from './routes/auth';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './swagger';
 
@@ -37,6 +38,7 @@ const StartServer = () => {
 
     router.use(express.urlencoded({ extended: true }));
     router.use(express.json());
+    router.use(cookieParser());
 
     router.use((req, res, next) => {
         req.url = req.url.replace(/\/+/g, '/');
@@ -44,16 +46,21 @@ const StartServer = () => {
     });
 
     /** Rules of our API */
-    router.use(cors());
+    router.use(
+        cors({
+            origin: process.env.CORS_ORIGIN || 'http://localhost:4200',
+            credentials: true
+        })
+    );
 
     /** Swagger */
     router.use('/api', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
     /** Routes */
+    router.use('/auth', authRoutes);
     router.use('/users', UserRoutes);
     router.use('/routes', RouteRoutes);
     router.use('/points', PointRoutes);
-    router.use('/auth', AuthRoutes);
 
     /** Healthcheck */
     router.get('/ping', (req, res, next) => res.status(200).json({ hello: 'world' }));

@@ -4,8 +4,11 @@ dotenv.config();
 
 const MONGO_URL = process.env.MONGO_URI || '';
 const SERVER_PORT = process.env.SERVER_PORT ? Number(process.env.SERVER_PORT) : 1337;
-const JWT_SECRET = process.env.JWT_SECRET || '';
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '1d';
+
+const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'LlaveSecretaDefault';
+const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET || 'LlaveRefreshDefault';
+const JWT_ACCESS_EXPIRES_IN = process.env.JWT_ACCESS_EXPIRES_IN || '15m';
+const JWT_REFRESH_EXPIRES_IN = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
 
 export const config = {
     mongo: {
@@ -15,7 +18,19 @@ export const config = {
         port: SERVER_PORT
     },
     jwt: {
-        secret: JWT_SECRET,
-        expiresIn: JWT_EXPIRES_IN
+        accessSecret: JWT_ACCESS_SECRET,
+        refreshSecret: JWT_REFRESH_SECRET,
+        accessExpiresIn: JWT_ACCESS_EXPIRES_IN,
+        refreshExpiresIn: JWT_REFRESH_EXPIRES_IN
+    },
+    cookies: {
+        refreshName: 'refreshToken',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        options: {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax' as const,
+            path: '/'
+        }
     }
 };

@@ -1,34 +1,48 @@
 {
-    "name": "express-api-mongo-indepth",
-    "version": "1.0.0",
-    "description": "",
-    "main": "src/server.ts",
-    "scripts": {
-        "start": "node build/server.js",
-        "postinstall": "tsc",
-        "import_data": "node build/scripts/seedBackend.js"
-    },
-    "author": "",
-    "license": "MIT",
-    "dependencies": {
-        "bcrypt": "^6.0.0",
-        "chalk": "^4.1.2",
-        "cors": "^2.8.6",
-        "dotenv": "^16.0.0",
-        "express": "^4.17.3",
-        "joi": "^17.6.0",
-        "jsonwebtoken": "^9.0.3",
-        "mongoose": "^6.13.9",
-        "swagger-jsdoc": "^6.2.8",
-        "swagger-ui-express": "^5.0.1"
-    },
-    "devDependencies": {
-        "@types/bcrypt": "^6.0.0",
-        "@types/cors": "^2.8.19",
-        "@types/express": "^4.17.13",
-        "@types/jsonwebtoken": "^9.0.10",
-        "@types/swagger-jsdoc": "^6.0.4",
-        "@types/swagger-ui-express": "^4.1.8",
-        "typescript": "^4.5.5"
-    }
+  "name": "express-api-mongo-indepth",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/server.ts",
+  "scripts": {
+    "build": "tsc",
+    "start": "node build/server.js",
+    "postinstall": "tsc",
+    "import_data": "node build/scripts/seedBackend.js"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "chalk": "^4.1.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "joi": "^17.6.0",
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^6.13.9",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.13",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
+    "typescript": "^4.5.5"
+  }
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cookie-parser": "^1.4.10",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^4.17.13",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^18.19.31",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "@types/swagger-ui-express": "^4.1.8",
+    "typescript": "^4.5.5"
+  }
+>>>>>>> 83c5950 (jwt 1st version)
 }
