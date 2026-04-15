@@ -1,6 +1,7 @@
 import express from 'express';
 import controller from '../controllers/Point';
 import { Schemas, ValidateJoi, ValidateQuery } from '../middleware/Joi';
+import { authenticateToken, authorizePointRouteOwnerOrAdmin, authorizePointOwnerOrAdmin } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -134,7 +135,7 @@ const router = express.Router();
  *       401:
  *         description: Unauthorized
  */
-router.get('/', ValidateQuery(Schemas.Point.listQuery), controller.readAll);
+router.get('/', authenticateToken, ValidateQuery(Schemas.Point.listQuery), controller.readAll);
 
 /**
  * @openapi
@@ -157,7 +158,7 @@ router.get('/', ValidateQuery(Schemas.Point.listQuery), controller.readAll);
  *       401:
  *         description: Unauthorized
  */
-router.get('/route/:routeId', controller.readByRoute);
+router.get('/route/:routeId', authenticateToken, controller.readByRoute);
 
 /**
  * @openapi
@@ -182,7 +183,7 @@ router.get('/route/:routeId', controller.readByRoute);
  *       401:
  *         description: Unauthorized
  */
-router.get('/:pointId', controller.readPoint);
+router.get('/:pointId', authenticateToken, controller.readPoint);
 
 /**
  * @openapi
@@ -208,7 +209,7 @@ router.get('/:pointId', controller.readPoint);
  *       403:
  *         description: Forbidden
  */
-router.post('/', ValidateJoi(Schemas.Point.create), controller.createPoint);
+router.post('/', authenticateToken, authorizePointRouteOwnerOrAdmin, ValidateJoi(Schemas.Point.create), controller.createPoint);
 
 /**
  * @openapi
@@ -243,7 +244,7 @@ router.post('/', ValidateJoi(Schemas.Point.create), controller.createPoint);
  *       403:
  *         description: Forbidden
  */
-router.put('/:pointId', ValidateJoi(Schemas.Point.update), controller.updatePoint);
+router.put('/:pointId', authenticateToken, authorizePointOwnerOrAdmin, ValidateJoi(Schemas.Point.update), controller.updatePoint);
 
 /**
  * @openapi
@@ -270,6 +271,6 @@ router.put('/:pointId', ValidateJoi(Schemas.Point.update), controller.updatePoin
  *       403:
  *         description: Forbidden
  */
-router.delete('/:pointId', controller.deletePoint);
+router.delete('/:pointId', authenticateToken, authorizePointOwnerOrAdmin, controller.deletePoint);
 
 export default router;

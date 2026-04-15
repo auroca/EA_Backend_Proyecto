@@ -1,6 +1,7 @@
 import express from 'express';
 import controller from '../controllers/User';
 import { Schemas, ValidateJoi, ValidateQuery } from '../middleware/Joi';
+import { authenticateToken, authorizeRoles, authorizeSelfOrAdmin } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -153,7 +154,7 @@ router.post('/', ValidateJoi(Schemas.User.create), controller.createUser);
  *       403:
  *         description: Forbidden
  */
-router.get('/', ValidateQuery(Schemas.User.listQuery), controller.readAll);
+router.get('/', authenticateToken, authorizeRoles('admin'), ValidateQuery(Schemas.User.listQuery), controller.readAll);
 
 /**
  * @openapi
@@ -180,7 +181,7 @@ router.get('/', ValidateQuery(Schemas.User.listQuery), controller.readAll);
  *       403:
  *         description: Forbidden
  */
-router.get('/:userId', controller.readUser);
+router.get('/:userId', authenticateToken, authorizeSelfOrAdmin, controller.readUser);
 
 /**
  * @openapi
@@ -215,7 +216,7 @@ router.get('/:userId', controller.readUser);
  *       403:
  *         description: Forbidden
  */
-router.put('/:userId', ValidateJoi(Schemas.User.update), controller.updateUser);
+router.put('/:userId', authenticateToken, authorizeSelfOrAdmin, ValidateJoi(Schemas.User.update), controller.updateUser);
 
 /**
  * @openapi
@@ -242,6 +243,6 @@ router.put('/:userId', ValidateJoi(Schemas.User.update), controller.updateUser);
  *       403:
  *         description: Forbidden
  */
-router.delete('/:userId', controller.deleteUser);
+router.delete('/:userId', authenticateToken, authorizeSelfOrAdmin, controller.deleteUser);
 
 export default router;
