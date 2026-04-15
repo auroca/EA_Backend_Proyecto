@@ -29,17 +29,22 @@ const getRoute = async (routeId: string) => {
     return await RouteModel.findById(routeId).populate('points').exec();
 };
 
-const getAllRoutes = async (pagination?: PaginationParams): Promise<ListResult<IRoute>> => {
+const getAllRoutes = async (
+    pagination?: PaginationParams,
+    filter?: any
+): Promise<ListResult<IRoute>> => {
+    const effectiveFilter = filter && Object.keys(filter).length ? filter : {};
+
     if (!pagination) {
-        return await RouteModel.find().sort({ _id: 1 }).populate('points').exec();
+        return await RouteModel.find(effectiveFilter).sort({ _id: 1 }).populate('points').exec();
     }
 
     const { limit, page } = pagination;
     const skip = (page - 1) * limit;
 
     const [data, total] = await Promise.all([
-        RouteModel.find().sort({ _id: 1 }).skip(skip).limit(limit).populate('points').exec(),
-        RouteModel.countDocuments()
+        RouteModel.find(effectiveFilter).sort({ _id: 1 }).skip(skip).limit(limit).populate('points').exec(),
+        RouteModel.countDocuments(effectiveFilter)
     ]);
 
     return {

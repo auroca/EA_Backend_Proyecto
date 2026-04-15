@@ -1,6 +1,6 @@
 import express from 'express';
 import controller from '../controllers/User';
-import { Schemas, ValidateJoi } from '../middleware/Joi';
+import { Schemas, ValidateJoi, ValidateQuery } from '../middleware/Joi';
 
 const router = express.Router();
 
@@ -153,7 +153,7 @@ router.post('/', ValidateJoi(Schemas.User.create), controller.createUser);
  *       403:
  *         description: Forbidden
  */
-router.get('/', controller.readAll);
+router.get('/', ValidateQuery(Schemas.User.listQuery), controller.readAll);
 
 /**
  * @openapi

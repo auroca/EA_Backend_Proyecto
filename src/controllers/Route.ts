@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import RouteService from '../services/Route';
 import { parsePagination } from '../library/Pagination';
+import Filters, { FieldSpec } from '../library/Filters';
 import { AuthRequest } from '../middleware/auth';
 
 const createRoute = async (req: AuthRequest, res: Response, next: NextFunction) => {
@@ -38,7 +39,26 @@ const readRoute = async (req: Request, res: Response, next: NextFunction) => {
 const readAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const pagination = parsePagination(req.query);
-        const routes = await RouteService.getAllRoutes(pagination);
+
+        const allowedFields: FieldSpec[] = [
+            { name: 'name', type: 'string' },
+            { name: 'description', type: 'string' },
+            { name: 'city', type: 'string' },
+            { name: 'country', type: 'string' },
+            { name: 'distance', type: 'number' },
+            { name: 'duration', type: 'number' },
+            { name: 'difficulty', type: 'string' },
+            { name: 'tags', type: 'stringArray' },
+            { name: 'userId', type: 'id' }
+        ];
+
+        const sourceFilter = (req.query.filter as any) || {};
+        const { filter, errors } = Filters.parseFilters(sourceFilter, allowedFields);
+        if (errors.length) {
+            return res.status(400).json({ errors });
+        }
+
+        const routes = await RouteService.getAllRoutes(pagination, filter);
         return res.status(200).json(routes);
     } catch (error) {
         return res.status(500).json({ error });

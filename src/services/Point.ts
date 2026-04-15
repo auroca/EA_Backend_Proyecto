@@ -22,17 +22,19 @@ const getPoint = async (pointId: string) => {
     return await PointModel.findById(pointId).exec();
 };
 
-const getAllPoints = async (pagination?: PaginationParams): Promise<ListResult<IPoint>> => {
+const getAllPoints = async (pagination?: PaginationParams, filter?: any): Promise<ListResult<IPoint>> => {
+    const effectiveFilter = filter && Object.keys(filter).length ? filter : {};
+
     if (!pagination) {
-        return await PointModel.find().sort({ _id: 1 }).exec();
+        return await PointModel.find(effectiveFilter).sort({ _id: 1 }).exec();
     }
 
     const { limit, page } = pagination;
     const skip = (page - 1) * limit;
 
     const [data, total] = await Promise.all([
-        PointModel.find().sort({ _id: 1 }).skip(skip).limit(limit).exec(),
-        PointModel.countDocuments()
+        PointModel.find(effectiveFilter).sort({ _id: 1 }).skip(skip).limit(limit).exec(),
+        PointModel.countDocuments(effectiveFilter)
     ]);
 
     return {

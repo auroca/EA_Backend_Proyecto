@@ -36,17 +36,19 @@ const getUser = async (userId: string): Promise<IUserModel | null> => {
     return await User.findById(userId).populate('routes').exec();
 };
 
-const getAllUsers = async (pagination?: PaginationParams): Promise<ListResult<IUserModel>> => {
+const getAllUsers = async (pagination?: PaginationParams, filter?: any): Promise<ListResult<IUserModel>> => {
+    const effectiveFilter = filter && Object.keys(filter).length ? filter : {};
+
     if (!pagination) {
-        return await User.find().sort({ _id: 1 }).populate('routes').exec();
+        return await User.find(effectiveFilter).sort({ _id: 1 }).populate('routes').exec();
     }
 
     const { limit, page } = pagination;
     const skip = (page - 1) * limit;
 
     const [data, total] = await Promise.all([
-        User.find().sort({ _id: 1 }).skip(skip).limit(limit).populate('routes').exec(),
-        User.countDocuments()
+        User.find(effectiveFilter).sort({ _id: 1 }).skip(skip).limit(limit).populate('routes').exec(),
+        User.countDocuments(effectiveFilter)
     ]);
 
     return {

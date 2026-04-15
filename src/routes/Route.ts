@@ -1,26 +1,45 @@
 import express from 'express';
 import controller from '../controllers/Route';
-import { Schemas, ValidateJoi } from '../middleware/Joi';
+import { Schemas, ValidateJoi, ValidateQuery } from '../middleware/Joi';
 
 const router = express.Router();
 
 /**
  * @openapi
  * tags:
- *   - name: routes
- *     description: CRUD endpoints for Routes
- *
- * components:
- *   schemas:
- *     Route:
- *       type: object
- *       properties:
- *         _id:
- *           type: string
- *           example: "65f1c2a1b2c3d4e5f6789012"
- *         name:
- *           type: string
- *           example: "Ruta por Montserrat"
+			 - in: query
+				 name: filter
+				 required: false
+				 style: deepObject
+				 explode: true
+				 schema:
+					 type: object
+					 additionalProperties: true
+				 description: |
+					 Filter object using `filter[field]=value`. Strings perform substring (case-insensitive).
+					 Numbers require exact match. For array fields (e.g. `tags`) a match occurs if any element contains the value.
+					 Repeat `filter[field]` to OR multiple values for the same field. Combine different fields for AND.
+				 examples:
+					 byName:
+						 summary: filter by name contains
+						 value: { name: 'montaña' }
+					 byDistance:
+						 summary: exact numeric filter
+						 value: { distance: 10 }
+			 - in: query
+				 name: limit
+				 required: false
+				 schema:
+					 type: integer
+					 enum: [10, 25, 50]
+				 description: Page size. Use together with page to enable pagination.
+			 - in: query
+				 name: page
+				 required: false
+				 schema:
+					 type: integer
+					 minimum: 1
+				 description: Page number. Use together with limit to enable pagination.
  *         description:
  *           type: string
  *           example: "Ruta circular con vistas muy buenas"
@@ -30,40 +49,21 @@ const router = express.Router();
  *         country:
  *           type: string
  *           example: "España"
- *         distance:
- *           type: number
- *           example: 12.5
- *         duration:
- *           type: number
- *           example: 180
- *         difficulty:
- *           type: string
- *           example: "medium"
- *         tags:
- *           type: array
- *           items:
- *             type: string
- *           example: ["montaña", "naturaleza"]
- *         userId:
- *           type: string
- *           example: "65f1c2a1b2c3d4e5f6789001"
- *         createdAt:
- *           type: string
- *           format: date-time
- *           example: "2026-03-13T09:00:00.000Z"
- *         updatedAt:
- *           type: string
- *           format: date-time
- *           example: "2026-03-13T09:30:00.000Z"
- *
- *     RouteCreate:
- *       type: object
- *       required:
- *         - name
- *         - description
- *         - city
- *         - country
- *         - distance
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           enum: [10, 25, 50]
+ *         description: Page size. Use together with page to enable pagination.
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Page number. Use together with limit to enable pagination.
  *         - duration
  *         - difficulty
  *       properties:
@@ -156,7 +156,7 @@ const router = express.Router();
  *       401:
  *         description: Unauthorized
  */
-router.get('/', controller.readAll);
+router.get('/', ValidateQuery(Schemas.Route.listQuery), controller.readAll);
 
 /**
  * @openapi

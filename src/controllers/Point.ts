@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import PointService from '../services/Point';
 import { parsePagination } from '../library/Pagination';
+import Filters, { FieldSpec } from '../library/Filters';
 
 const createPoint = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -27,7 +28,23 @@ const readPoint = async (req: Request, res: Response, next: NextFunction) => {
 const readAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const pagination = parsePagination(req.query);
-        const points = await PointService.getAllPoints(pagination);
+
+        const allowedFields: FieldSpec[] = [
+            { name: 'name', type: 'string' },
+            { name: 'description', type: 'string' },
+            { name: 'latitude', type: 'number' },
+            { name: 'longitude', type: 'number' },
+            { name: 'routeId', type: 'id' },
+            { name: 'index', type: 'number' }
+        ];
+
+        const sourceFilter = (req.query.filter as any) || {};
+        const { filter, errors } = Filters.parseFilters(sourceFilter, allowedFields);
+        if (errors.length) {
+            return res.status(400).json({ errors });
+        }
+
+        const points = await PointService.getAllPoints(pagination, filter);
         return res.status(200).json(points);
     } catch (error) {
         return res.status(500).json({ error });

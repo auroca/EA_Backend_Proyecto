@@ -1,6 +1,6 @@
 import express from 'express';
 import controller from '../controllers/Point';
-import { Schemas, ValidateJoi } from '../middleware/Joi';
+import { Schemas, ValidateJoi, ValidateQuery } from '../middleware/Joi';
 
 const router = express.Router();
 
@@ -134,7 +134,7 @@ const router = express.Router();
  *       401:
  *         description: Unauthorized
  */
-router.get('/', controller.readAll);
+router.get('/', ValidateQuery(Schemas.Point.listQuery), controller.readAll);
 
 /**
  * @openapi

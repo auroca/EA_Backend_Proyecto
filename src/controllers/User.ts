@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import UserService from '../services/User';
 import { parsePagination } from '../library/Pagination';
+import Filters, { FieldSpec } from '../library/Filters';
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -45,7 +46,23 @@ const readUser = async (req: Request, res: Response, next: NextFunction) => {
 const readAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const pagination = parsePagination(req.query);
-        const users = await UserService.getAllUsers(pagination);
+
+        const allowedFields: FieldSpec[] = [
+            { name: 'name', type: 'string' },
+            { name: 'surname', type: 'string' },
+            { name: 'username', type: 'string' },
+            { name: 'email', type: 'string' },
+            { name: 'enabled', type: 'boolean' },
+            { name: 'role', type: 'string' }
+        ];
+
+        const sourceFilter = (req.query.filter as any) || {};
+        const { filter, errors } = Filters.parseFilters(sourceFilter, allowedFields);
+        if (errors.length) {
+            return res.status(400).json({ errors });
+        }
+
+        const users = await UserService.getAllUsers(pagination, filter);
         return res.status(200).json(users);
     } catch (error) {
         return res.status(500).json({ error });
