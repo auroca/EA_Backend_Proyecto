@@ -45,10 +45,18 @@ const StartServer = () => {
         next();
     });
 
-    /** Rules of our API */
+    const allowedOrigins = ['http://localhost:4200', 'http://localhost:5173'];
+
     router.use(
         cors({
-            origin: process.env.CORS_ORIGIN || 'http://localhost:4200',
+            origin: (origin, callback) => {
+                if (!origin || allowedOrigins.includes(origin)) {
+                    callback(null, true);
+                    return;
+                }
+
+                callback(new Error('Not allowed by CORS'));
+            },
             credentials: true
         })
     );
