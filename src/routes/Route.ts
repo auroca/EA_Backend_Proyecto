@@ -47,6 +47,11 @@ const router = express.Router();
  *           items:
  *             type: string
  *           example: ["montaña", "naturaleza"]
+ *         images:
+ *           type: array
+ *           items:
+ *             type: string
+ *           example: ["https://cdn.example.com/routes/1.jpg", "https://cdn.example.com/routes/2.jpg"]
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -94,6 +99,11 @@ const router = express.Router();
  *           items:
  *             type: string
  *           example: ["montaña", "naturaleza"]
+ *         images:
+ *           type: array
+ *           items:
+ *             type: string
+ *           example: ["https://cdn.example.com/routes/1.jpg", "https://cdn.example.com/routes/2.jpg"]
  *
  *     RouteUpdate:
  *       type: object
@@ -125,6 +135,11 @@ const router = express.Router();
  *           items:
  *             type: string
  *           example: ["montaña", "naturaleza"]
+ *         images:
+ *           type: array
+ *           items:
+ *             type: string
+ *           example: ["https://cdn.example.com/routes/1.jpg", "https://cdn.example.com/routes/2.jpg"]
  */
 
 /**
@@ -133,8 +148,6 @@ const router = express.Router();
  *   get:
  *     summary: List all Routes
  *     tags: [routes]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: filter
@@ -168,7 +181,7 @@ const router = express.Router();
  *       401:
  *         description: Unauthorized
  */
-router.get('/', authenticateToken, ValidateQuery(Schemas.Route.listQuery), controller.readAll);
+router.get('/', ValidateQuery(Schemas.Route.listQuery), controller.readAll);
 
 /**
  * @openapi

@@ -9,6 +9,7 @@ export interface IRoute {
     duration: number;
     difficulty: 'easy' | 'medium' | 'hard';
     tags: string[];
+    images: string[];
     userId: string;
 }
 
@@ -28,6 +29,7 @@ const RouteSchema: Schema = new Schema(
             required: true
         },
         tags: [{ type: String }],
+        images: [{ type: String }],
         userId: {
             type: Schema.Types.ObjectId,
             ref: 'User',

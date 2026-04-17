@@ -49,6 +49,7 @@ const readAll = async (req: Request, res: Response, next: NextFunction) => {
             { name: 'duration', type: 'number' },
             { name: 'difficulty', type: 'string' },
             { name: 'tags', type: 'stringArray' },
+            { name: 'images', type: 'stringArray' },
             { name: 'userId', type: 'id' }
         ];
 

@@ -77,6 +77,7 @@ export const Schemas = {
             duration: Joi.number().required(),
             difficulty: Joi.string().valid('easy', 'medium', 'hard').required(),
             tags: Joi.array().items(Joi.string()).optional(),
+            images: Joi.array().items(Joi.string()).optional(),
             userId: Joi.string()
                 .pattern(/^[0-9a-fA-F]{24}$/)
                 .optional()
@@ -90,7 +91,8 @@ export const Schemas = {
             distance: Joi.number().optional(),
             duration: Joi.number().optional(),
             difficulty: Joi.string().valid('easy', 'medium', 'hard').optional(),
-            tags: Joi.array().items(Joi.string()).optional()
+            tags: Joi.array().items(Joi.string()).optional(),
+            images: Joi.array().items(Joi.string()).optional()
         }).min(1)
         ,
 
@@ -105,6 +107,7 @@ export const Schemas = {
                 duration: Joi.alternatives().try(Joi.number(), Joi.array().items(Joi.number())).optional(),
                 difficulty: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
                 tags: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
+                images: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
                 userId: Joi.alternatives().try(Joi.string().pattern(/^[0-9a-fA-F]{24}$/), Joi.array().items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/))).optional()
             }).optional(),
             limit: Joi.number().valid(10, 25, 50).optional(),
