@@ -10,6 +10,7 @@ export interface IUser {
     password: string;
     enabled: boolean;
     role: UserRole;
+    favoriteRoutes: mongoose.Types.ObjectId[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -31,7 +32,14 @@ const UserSchema: Schema = new Schema(
             enum: ['admin', 'user'],
             default: 'user',
             required: true
-        }
+        },
+        favoriteRoutes: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: 'Route',
+                default: []
+            }
+        ]
     },
     {
         timestamps: true,
