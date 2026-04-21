@@ -107,10 +107,85 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
+const readFavorites = async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.params.userId ?? req.params.UserId;
+
+    if (!userId) {
+        return res.status(400).json({ message: 'userId is required' });
+    }
+
+    try {
+        const user = await UserService.getFavoriteRoutes(userId);
+        return user
+            ? res.status(200).json(user.favoriteRoutes)
+            : res.status(404).json({ message: 'not found' });
+    } catch (error) {
+        return res.status(500).json({ error });
+    }
+};
+
+const addFavorite = async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.params.userId ?? req.params.UserId;
+    const routeId = req.params.routeId ?? req.params.RouteId;
+
+    if (!userId || !routeId) {
+        return res.status(400).json({ message: 'userId and routeId are required' });
+    }
+
+    try {
+        const user = await UserService.addFavoriteRoute(userId, routeId);
+        return user
+            ? res.status(200).json(user.favoriteRoutes)
+            : res.status(404).json({ message: 'not found' });
+    } catch (error) {
+        return res.status(500).json({ error });
+    }
+};
+
+const removeFavorite = async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.params.userId ?? req.params.UserId;
+    const routeId = req.params.routeId ?? req.params.RouteId;
+
+    if (!userId || !routeId) {
+        return res.status(400).json({ message: 'userId and routeId are required' });
+    }
+
+    try {
+        const user = await UserService.removeFavoriteRoute(userId, routeId);
+        return user
+            ? res.status(200).json(user.favoriteRoutes)
+            : res.status(404).json({ message: 'not found' });
+    } catch (error) {
+        return res.status(500).json({ error });
+    }
+};
+
+const toggleFavorite = async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.params.userId ?? req.params.UserId;
+    const routeId = req.params.routeId ?? req.params.RouteId;
+
+    if (!userId || !routeId) {
+        return res.status(400).json({ message: 'userId and routeId are required' });
+    }
+
+    try {
+        const user = await UserService.toggleFavoriteRoute(userId, routeId);
+        return user
+            ? res.status(200).json(user.favoriteRoutes)
+            : res.status(404).json({ message: 'not found' });
+    } catch (error) {
+        return res.status(500).json({ error });
+    }
+};
+
 export default {
     createUser,
     readUser,
     readAll,
     updateUser,
-    deleteUser
+    deleteUser,
+    readFavorites,
+    addFavorite,
+    removeFavorite,
+    toggleFavorite
 };

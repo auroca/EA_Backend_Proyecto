@@ -42,6 +42,11 @@ const router = express.Router();
  *           type: string
  *           enum: [admin, user]
  *           example: "user"
+ *         favoriteRoutes:
+ *           type: array
+ *           items:
+ *             type: string
+ *           example: ["65f1c2a1b2c3d4e5f6789012", "65f1c2a1b2c3d4e5f6789013"]
  *         createdAt:
  *           type: string
  *           format: date-time
@@ -101,6 +106,11 @@ const router = express.Router();
  *           type: string
  *           enum: [admin, user]
  *           example: "admin"
+ *
+ *     FavoriteRoutes:
+ *       type: array
+ *       items:
+ *         $ref: '#/components/schemas/Route'
  */
 
 /**
@@ -155,6 +165,148 @@ router.post('/', ValidateJoi(Schemas.User.create), controller.createUser);
  *         description: Forbidden
  */
 router.get('/', authenticateToken, authorizeRoles('admin'), ValidateQuery(Schemas.User.listQuery), controller.readAll);
+
+/**
+ * @openapi
+ * /users/{userId}/favorites:
+ *   get:
+ *     summary: Get favorite Routes of a User
+ *     tags: [users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ObjectId
+ *     responses:
+ *       200:
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FavoriteRoutes'
+ *       404:
+ *         description: Not found
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
+router.get('/:userId/favorites', authenticateToken, authorizeSelfOrAdmin, controller.readFavorites);
+
+/**
+ * @openapi
+ * /users/{userId}/favorites/{routeId}:
+ *   post:
+ *     summary: Add a Route to User favorites
+ *     tags: [users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ObjectId
+ *       - in: path
+ *         name: routeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Route ObjectId
+ *     responses:
+ *       200:
+ *         description: Favorite added
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FavoriteRoutes'
+ *       404:
+ *         description: Not found
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
+router.post('/:userId/favorites/:routeId', authenticateToken, authorizeSelfOrAdmin, controller.addFavorite);
+
+/**
+ * @openapi
+ * /users/{userId}/favorites/{routeId}:
+ *   delete:
+ *     summary: Remove a Route from User favorites
+ *     tags: [users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ObjectId
+ *       - in: path
+ *         name: routeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Route ObjectId
+ *     responses:
+ *       200:
+ *         description: Favorite removed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FavoriteRoutes'
+ *       404:
+ *         description: Not found
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
+router.delete('/:userId/favorites/:routeId', authenticateToken, authorizeSelfOrAdmin, controller.removeFavorite);
+
+/**
+ * @openapi
+ * /users/{userId}/favorites/{routeId}/toggle:
+ *   patch:
+ *     summary: Toggle a Route in User favorites
+ *     tags: [users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: User ObjectId
+ *       - in: path
+ *         name: routeId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Route ObjectId
+ *     responses:
+ *       200:
+ *         description: Favorite toggled
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/FavoriteRoutes'
+ *       404:
+ *         description: Not found
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ */
+router.patch('/:userId/favorites/:routeId/toggle', authenticateToken, authorizeSelfOrAdmin, controller.toggleFavorite);
 
 /**
  * @openapi
