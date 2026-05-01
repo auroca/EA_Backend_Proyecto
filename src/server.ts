@@ -45,21 +45,22 @@ const StartServer = () => {
         next();
     });
 
-    const allowedOrigins = ['http://localhost:4200', 'http://localhost:5173', 'http://localhost:1337'];
+    const allowedOrigins =
+    process.env.CORS_ORIGIN?.split(',').map((origin) => origin.trim()).filter(Boolean) ?? [];
 
-    router.use(
-        cors({
-            origin: (origin, callback) => {
-                if (!origin || allowedOrigins.includes(origin)) {
-                    callback(null, true);
-                    return;
-                }
+router.use(
+    cors({
+        origin: (origin, callback) => {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+                return;
+            }
 
-                callback(new Error('Not allowed by CORS'));
-            },
-            credentials: true
-        })
-    );
+            callback(new Error(`Not allowed by CORS: ${origin}`));
+        },
+        credentials: true
+    })
+);
 
     /** Swagger */
     router.use('/api', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
