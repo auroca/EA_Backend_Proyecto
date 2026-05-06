@@ -15,6 +15,7 @@ import { swaggerSpec } from './swagger';
 const router = express();
 
 /** Connect to Mongo */
+mongoose.set('strictQuery', false);
 mongoose
     .connect(config.mongo.url, { retryWrites: true, w: 'majority' })
     .then(() => {
@@ -45,7 +46,7 @@ const StartServer = () => {
         next();
     });
 
-    const allowedOrigins = process.env.CORS_ORIGIN?.split(',').map((origin) => origin.trim()).filter(Boolean) ?? [];
+    const allowedOrigins = config.cors.origins;
 
     router.use(
         cors({
