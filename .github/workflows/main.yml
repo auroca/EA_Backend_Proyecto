@@ -43,7 +43,7 @@ jobs:
                   context: ./
                   file: ./Dockerfile
                   push: true
-                  tags: ${{ secrets.DOCKER_HUB_USERNAME }}/backendtrip2guide:${{ github.event.head_commit.message }}
+                  tags: ${{ secrets.DOCKER_HUB_USERNAME }}/backendtrip2guide:${{ steps.vars.outputs.tag }}
 
             - name: Image digest
               run: echo ${{ steps.docker_build.outputs.digest }}
