@@ -4,16 +4,13 @@ import { verifyAccessToken } from '../utils/jwt';
 import { IJwtPayload, UserRole } from '../models/JwtPayload';
 import RouteModel from '../models/Route';
 import PointModel from '../models/Point';
+import ChatModel from '../models/Chat';
 
 export interface AuthRequest extends Request {
     user?: IJwtPayload;
 }
 
-export const authenticateToken = (
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction
-) => {
+export const authenticateToken = (req: AuthRequest, res: Response, next: NextFunction) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
@@ -48,11 +45,7 @@ export const authorizeRoles = (...roles: UserRole[]) => {
     };
 };
 
-export const authorizeSelfOrAdmin = (
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction
-) => {
+export const authorizeSelfOrAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
     const userId = req.params.userId ?? req.params.UserId;
 
     if (!req.user) {
@@ -66,11 +59,7 @@ export const authorizeSelfOrAdmin = (
     return res.status(403).json({ message: 'No tienes permisos para acceder a este recurso' });
 };
 
-export const authorizeRouteOwnerOrAdmin = async (
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction
-) => {
+export const authorizeRouteOwnerOrAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         if (!req.user) {
             return res.status(401).json({ message: 'Usuario no autenticado' });
@@ -102,11 +91,7 @@ export const authorizeRouteOwnerOrAdmin = async (
     }
 };
 
-export const authorizePointRouteOwnerOrAdmin = async (
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction
-) => {
+export const authorizePointRouteOwnerOrAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         if (!req.user) {
             return res.status(401).json({ message: 'Usuario no autenticado' });
@@ -138,11 +123,7 @@ export const authorizePointRouteOwnerOrAdmin = async (
     }
 };
 
-export const authorizePointOwnerOrAdmin = async (
-    req: AuthRequest,
-    res: Response,
-    next: NextFunction
-) => {
+export const authorizePointOwnerOrAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         if (!req.user) {
             return res.status(401).json({ message: 'Usuario no autenticado' });
@@ -168,6 +149,40 @@ export const authorizePointOwnerOrAdmin = async (
 
         if (route.userId.toString() !== req.user.id) {
             return res.status(403).json({ message: 'No tienes permisos para modificar este punto' });
+        }
+
+        return next();
+    } catch (error) {
+        return res.status(500).json({ error });
+    }
+};
+
+export const authorizeChatParticipantOrAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    try {
+        if (!req.user) {
+            return res.status(401).json({ message: 'Usuario no autenticado' });
+        }
+
+        if (req.user.rol === 'admin') {
+            return next();
+        }
+
+        const chatId = req.params.chatId ?? req.params.ChatId;
+
+        if (!chatId) {
+            return res.status(400).json({ message: 'chatId is required' });
+        }
+
+        const chat = await ChatModel.findById(chatId).select('participants').exec();
+
+        if (!chat) {
+            return res.status(404).json({ message: 'Chat not found' });
+        }
+
+        const isParticipant = chat.participants.some((participantId) => participantId.toString() === req.user!.id);
+
+        if (!isParticipant) {
+            return res.status(403).json({ message: 'No tienes permisos para acceder a este chat' });
         }
 
         return next();
