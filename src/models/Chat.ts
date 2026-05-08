@@ -34,17 +34,25 @@ const ChatSchema: Schema = new Schema(
                 timestamp: { type: Date, default: Date.now }
             }
         ],
-        password: { type: String, default: null }
+        password: { type: String, default: null, select: false }
     },
     {
         timestamps: true,
         versionKey: false,
         id: false,
         toJSON: {
-            virtuals: true
+            virtuals: true,
+            transform: (_doc, ret) => {
+                delete ret.password;
+                return ret;
+            }
         },
         toObject: {
-            virtuals: true
+            virtuals: true,
+            transform: (_doc, ret) => {
+                delete ret.password;
+                return ret;
+            }
         }
     }
 );

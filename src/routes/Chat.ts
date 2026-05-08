@@ -1,7 +1,7 @@
 import express from 'express';
 import controller from '../controllers/Chat';
 import { Schemas, ValidateJoi, ValidateQuery } from '../middleware/Joi';
-import { authenticateToken, authorizeRoles, authorizeSelfOrAdmin, authorizeChatParticipantOrAdmin } from '../middleware/auth';
+import { authenticateToken, authorizeSelfOrAdmin, authorizeChatParticipantOrAdmin } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -55,10 +55,6 @@ const router = express.Router();
  *           type: array
  *           items:
  *             $ref: '#/components/schemas/ChatParticipant'
- *         password:
- *           type: string
- *           nullable: true
- *           example: "secret123"
  *         chatHistory:
  *           type: array
  *           items:
@@ -115,6 +111,15 @@ const router = express.Router();
  *         message:
  *           type: string
  *           example: "Hola!"
+ *
+ *     ChatJoin:
+ *       type: object
+ *       required:
+ *         - password
+ *       properties:
+ *         password:
+ *           type: string
+ *           example: "secret123"
  */
 
 /**
@@ -149,14 +154,12 @@ const router = express.Router();
  *                 $ref: '#/components/schemas/Chat'
  *       401:
  *         description: Unauthorized
- *       403:
- *         description: Forbidden
  *       422:
  *         description: Validation failed
  *       500:
  *         description: Internal server error
  */
-router.get('/', authenticateToken, authorizeRoles('admin'), ValidateQuery(Schemas.Chat.listQuery), controller.readAll);
+router.get('/', authenticateToken, ValidateQuery(Schemas.Chat.listQuery), controller.readAll);
 
 /**
  * @openapi
@@ -217,7 +220,7 @@ router.post('/', authenticateToken, ValidateJoi(Schemas.Chat.create), controller
  *           minimum: 1
  *     responses:
  *       200:
- *         description: OK. Returns a list of chats for the user.
+ *         description: OK. Returns a list of chats where user participates.
  *         content:
  *           application/json:
  *             schema:
@@ -234,6 +237,45 @@ router.post('/', authenticateToken, ValidateJoi(Schemas.Chat.create), controller
  *         description: Internal server error
  */
 router.get('/user/:userId', authenticateToken, authorizeSelfOrAdmin, ValidateQuery(Schemas.Chat.listQuery), controller.getChatsByUser);
+
+/**
+ * @openapi
+ * /chats/{chatId}/join:
+ *   post:
+ *     summary: Join a Chat using its password
+ *     tags: [chats]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: chatId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Chat ObjectId
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ChatJoin'
+ *     responses:
+ *       200:
+ *         description: Joined chat
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Chat'
+ *       401:
+ *         description: Invalid password or unauthorized
+ *       404:
+ *         description: Chat not found
+ *       422:
+ *         description: Validation failed
+ *       500:
+ *         description: Internal server error
+ */
+router.post('/:chatId/join', authenticateToken, ValidateJoi(Schemas.Chat.join), controller.joinChat);
 
 /**
  * @openapi

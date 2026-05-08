@@ -68,6 +68,27 @@ const getChatsByUser = async (userId: string, pagination?: PaginationParams): Pr
     return await getAllChats(pagination, filter);
 };
 
+const joinChat = async (chatId: string, userId: string, password: string): Promise<IChatModel | null | 'INVALID_PASSWORD'> => {
+    const chat = await Chat.findById(chatId).select('+password participants').exec();
+
+    if (!chat) {
+        return null;
+    }
+
+    if (chat.password && chat.password !== password) {
+        return 'INVALID_PASSWORD';
+    }
+
+    const alreadyParticipant = chat.participants.some((participantId) => participantId.toString() === userId);
+
+    if (!alreadyParticipant) {
+        chat.participants.push(new mongoose.Types.ObjectId(userId));
+        await chat.save();
+    }
+
+    return await getChat(chatId);
+};
+
 export default {
     createChat,
     getChat,
@@ -75,5 +96,6 @@ export default {
     updateChat,
     deleteChat,
     addMessage,
-    getChatsByUser
+    getChatsByUser,
+    joinChat
 };

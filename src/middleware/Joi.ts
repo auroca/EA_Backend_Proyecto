@@ -178,6 +178,10 @@ export const Schemas = {
             message: Joi.string().required()
         }),
 
+        join: Joi.object({
+            password: Joi.string().allow('').required()
+        }),
+
         listQuery: Joi.object({
             filter: Joi.object({
                 name: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional()

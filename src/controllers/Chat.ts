@@ -123,6 +123,32 @@ const getChatsByUser = async (req: AuthRequest, res: Response, next: NextFunctio
     }
 };
 
+const joinChat = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    const chatId = req.params.chatId ?? req.params.ChatId;
+    const userId = req.user?.id;
+    const password = req.body.password;
+
+    if (!chatId || !userId || password === undefined) {
+        return res.status(400).json({ message: 'chatId and password are required' });
+    }
+
+    try {
+        const joinedChat = await ChatService.joinChat(chatId, userId, password);
+
+        if (!joinedChat) {
+            return res.status(404).json({ message: 'Chat not found' });
+        }
+
+        if (joinedChat === 'INVALID_PASSWORD') {
+            return res.status(401).json({ message: 'Invalid password' });
+        }
+
+        return res.status(200).json(joinedChat);
+    } catch (error) {
+        return res.status(500).json({ error });
+    }
+};
+
 export default {
     createChat,
     readChat,
@@ -130,5 +156,6 @@ export default {
     updateChat,
     deleteChat,
     addMessage,
-    getChatsByUser
+    getChatsByUser,
+    joinChat
 };
