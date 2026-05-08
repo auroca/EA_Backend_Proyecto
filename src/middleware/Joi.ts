@@ -50,9 +50,7 @@ export const Schemas = {
             password: Joi.string().min(6).optional(),
             enabled: Joi.boolean().optional(),
             role: Joi.string().valid('admin', 'user').optional()
-        }).min(1)
-        ,
-
+        }).min(1),
         listQuery: Joi.object({
             filter: Joi.object({
                 name: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
@@ -60,7 +58,9 @@ export const Schemas = {
                 username: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
                 email: Joi.alternatives().try(Joi.string().email(), Joi.array().items(Joi.string().email())).optional(),
                 enabled: Joi.alternatives().try(Joi.boolean(), Joi.array().items(Joi.boolean())).optional(),
-                role: Joi.alternatives().try(Joi.string().valid('admin', 'user'), Joi.array().items(Joi.string().valid('admin', 'user'))).optional()
+                role: Joi.alternatives()
+                    .try(Joi.string().valid('admin', 'user'), Joi.array().items(Joi.string().valid('admin', 'user')))
+                    .optional()
             }).optional(),
             limit: Joi.number().valid(10, 25, 50).optional(),
             page: Joi.number().min(1).optional()
@@ -93,9 +93,7 @@ export const Schemas = {
             difficulty: Joi.string().valid('easy', 'medium', 'hard').optional(),
             tags: Joi.array().items(Joi.string()).optional(),
             images: Joi.array().items(Joi.string()).optional()
-        }).min(1)
-        ,
-
+        }).min(1),
         // Query/list schema for filter and pagination
         listQuery: Joi.object({
             filter: Joi.object({
@@ -108,7 +106,9 @@ export const Schemas = {
                 difficulty: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
                 tags: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
                 images: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
-                userId: Joi.alternatives().try(Joi.string().pattern(/^[0-9a-fA-F]{24}$/), Joi.array().items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/))).optional()
+                userId: Joi.alternatives()
+                    .try(Joi.string().pattern(/^[0-9a-fA-F]{24}$/), Joi.array().items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/)))
+                    .optional()
             }).optional(),
             limit: Joi.number().valid(10, 25, 50).optional(),
             page: Joi.number().min(1).optional()
@@ -138,17 +138,49 @@ export const Schemas = {
                 .pattern(/^[0-9a-fA-F]{24}$/)
                 .optional(),
             index: Joi.number().integer().min(0).optional()
-        }).min(1)
-        ,
-
+        }).min(1),
         listQuery: Joi.object({
             filter: Joi.object({
                 name: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
                 description: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
                 latitude: Joi.alternatives().try(Joi.number(), Joi.array().items(Joi.number())).optional(),
                 longitude: Joi.alternatives().try(Joi.number(), Joi.array().items(Joi.number())).optional(),
-                routeId: Joi.alternatives().try(Joi.string().pattern(/^[0-9a-fA-F]{24}$/), Joi.array().items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/))).optional(),
+                routeId: Joi.alternatives()
+                    .try(Joi.string().pattern(/^[0-9a-fA-F]{24}$/), Joi.array().items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/)))
+                    .optional(),
                 index: Joi.alternatives().try(Joi.number().integer(), Joi.array().items(Joi.number().integer())).optional()
+            }).optional(),
+            limit: Joi.number().valid(10, 25, 50).optional(),
+            page: Joi.number().min(1).optional()
+        }).optional()
+    },
+
+    Chat: {
+        create: Joi.object({
+            name: Joi.string().required(),
+            participants: Joi.array()
+                .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/))
+                .min(1)
+                .required(),
+            password: Joi.string().allow(null, '').optional()
+        }),
+
+        update: Joi.object({
+            name: Joi.string().optional(),
+            participants: Joi.array()
+                .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/))
+                .min(1)
+                .optional(),
+            password: Joi.string().allow(null, '').optional()
+        }).min(1),
+
+        message: Joi.object({
+            message: Joi.string().required()
+        }),
+
+        listQuery: Joi.object({
+            filter: Joi.object({
+                name: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional()
             }).optional(),
             limit: Joi.number().valid(10, 25, 50).optional(),
             page: Joi.number().min(1).optional()
