@@ -143,8 +143,6 @@ router.get('/', authenticateToken, ValidateQuery(Schemas.Point.listQuery), contr
  *   get:
  *     summary: List all Points for a Route
  *     tags: [points]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: routeId
@@ -155,10 +153,8 @@ router.get('/', authenticateToken, ValidateQuery(Schemas.Point.listQuery), contr
  *     responses:
  *       200:
  *         description: OK
- *       401:
- *         description: Unauthorized
  */
-router.get('/route/:routeId', authenticateToken, controller.readByRoute);
+router.get('/route/:routeId', controller.readByRoute);
 
 /**
  * @openapi
@@ -166,8 +162,6 @@ router.get('/route/:routeId', authenticateToken, controller.readByRoute);
  *   get:
  *     summary: Get a Point by ID
  *     tags: [points]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: pointId
@@ -180,10 +174,8 @@ router.get('/route/:routeId', authenticateToken, controller.readByRoute);
  *         description: OK
  *       404:
  *         description: Not found
- *       401:
- *         description: Unauthorized
  */
-router.get('/:pointId', authenticateToken, controller.readPoint);
+router.get('/:pointId', controller.readPoint);
 
 /**
  * @openapi
