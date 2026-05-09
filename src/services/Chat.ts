@@ -1,6 +1,12 @@
 import mongoose from 'mongoose';
 import Chat, { IChatModel, IChat } from '../models/Chat';
 
+export type ChatSummary = {
+    _id: string;
+    name: string;
+    hasPassword: boolean;
+};
+
 type PaginationLimit = 10 | 25 | 50;
 
 type PaginationParams = {
@@ -53,6 +59,30 @@ const getAllChats = async (pagination?: PaginationParams, filter?: any): Promise
     return await Chat.find(effectiveFilter).sort({ _id: 1 }).skip(skip).limit(limit).populate('participants', 'username name').populate('chatHistory.userId', 'username name').exec();
 };
 
+const getAllChatsSummary = async (pagination?: PaginationParams, filter?: any): Promise<ChatSummary[]> => {
+    const effectiveFilter = filter && Object.keys(filter).length ? filter : {};
+
+    const query = Chat.find(effectiveFilter)
+        .sort({ _id: 1 })
+        .select('_id name')
+        .select('+password')
+        .lean<{ _id: mongoose.Types.ObjectId; name: string; password?: string | null }[]>();
+
+    if (pagination) {
+        const { limit, page } = pagination;
+        const skip = (page - 1) * limit;
+        query.skip(skip).limit(limit);
+    }
+
+    const chats = await query.exec();
+
+    return chats.map((chat) => ({
+        _id: String(chat._id),
+        name: chat.name,
+        hasPassword: typeof chat.password === 'string' && chat.password.length > 0
+    }));
+};
+
 const updateChat = async (chatId: string, data: Partial<IChat>): Promise<IChatModel | null> => {
     return await Chat.findByIdAndUpdate(chatId, data, { new: true }).populate('participants', 'username name').populate('chatHistory.userId', 'username name').exec();
 };
@@ -94,16 +124,18 @@ const joinChat = async (chatId: string, userId: string, password: string): Promi
         return null;
     }
 
+    const alreadyParticipant = chat.participants.some((participantId) => participantId.toString() === userId);
+
+    if (alreadyParticipant) {
+        return await getChat(chatId);
+    }
+
     if (chat.password && chat.password !== password) {
         return 'INVALID_PASSWORD';
     }
 
-    const alreadyParticipant = chat.participants.some((participantId) => participantId.toString() === userId);
-
-    if (!alreadyParticipant) {
-        chat.participants.push(new mongoose.Types.ObjectId(userId));
-        await chat.save();
-    }
+    chat.participants.push(new mongoose.Types.ObjectId(userId));
+    await chat.save();
 
     return await getChat(chatId);
 };
@@ -112,6 +144,7 @@ export default {
     createChat,
     getChat,
     getAllChats,
+    getAllChatsSummary,
     updateChat,
     deleteChat,
     addMessage,

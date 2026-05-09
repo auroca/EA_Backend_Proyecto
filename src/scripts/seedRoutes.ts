@@ -15,7 +15,6 @@ type SeedRoute = {
     duration?: number;
     difficulty: 'easy' | 'medium' | 'hard';
     tags?: string[];
-    images?: string[];
     userId: string;
 };
 
@@ -30,12 +29,6 @@ const SEED_ROUTES: SeedRoute[] = [
         country: 'Spain',
         distance: 12,
         duration: 95,
-        images: [
-            'https://www.portugalgreenwalks.com/wordpress/wp-content/uploads/2025/09/Geres-Xures_Cross-Border_Cycling_Holiday-15.jpg',
-            '',
-            '',
-            ''
-        ],
         tags: []
     },
     {
@@ -48,12 +41,6 @@ const SEED_ROUTES: SeedRoute[] = [
         country: 'Spain',
         distance: 8,
         duration: 70,
-        images: [
-            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSO6jsvNlx8W-nZnAWQ40KctvwxJT5iHp9tew&s',
-            '',
-            '',
-            ''
-        ],
         tags: []
     },
     {
@@ -66,12 +53,6 @@ const SEED_ROUTES: SeedRoute[] = [
         country: 'Spain',
         distance: 15,
         duration: 120,
-        images: [
-            'https://content-viajes.nationalgeographic.com.es/medio/2025/05/22/porto-do-barqueiro_eaeee80c_1173938656_250522151316_1280x658.webp',
-            '',
-            '',
-            ''
-        ],
         tags: []
     },
     {
@@ -84,12 +65,6 @@ const SEED_ROUTES: SeedRoute[] = [
         country: 'Spain',
         distance: 9,
         duration: 80,
-        images: [
-            'https://pohcdn.com/sites/default/files/styles/paragraph__live_banner__lb_image__1880bp/public/live_banner/Valencia-1.jpg',
-            '',
-            '',
-            ''
-        ],
         tags: []
     },
     {
@@ -102,12 +77,6 @@ const SEED_ROUTES: SeedRoute[] = [
         country: 'Spain',
         distance: 11,
         duration: 100,
-        images: [
-            'https://s3-eu-west-1.amazonaws.com/cv-developments/production%2Fimages%2Fe585121c-423b-cddc-d371-47d433a9bff1%2FEnterrement-de-vie-de-garcon---Budapest---Crazy-Night---Entree-club-Peach.jpg',
-            '',
-            '',
-            ''
-        ],
         tags: []
     },
     {
@@ -120,12 +89,6 @@ const SEED_ROUTES: SeedRoute[] = [
         country: 'Spain',
         distance: 6,
         duration: 65,
-        images: [
-            'https://www.gancarczyk.com/wp-content/uploads/2025/03/valencia-01.jpg',
-            '',
-            '',
-            ''
-        ],
         tags: []
     },
     {
@@ -138,12 +101,6 @@ const SEED_ROUTES: SeedRoute[] = [
         description: 'Charming Seville. A route to experience its warm atmosphere, beautiful corners, and the essence that makes the city unforgettable.',
         distance: 10,
         duration: 90,
-        images: [
-            'https://www.elcaminoconcorreos.com/admin/files/articulos/67/que-ver-en-sevilla.jpg',
-            '',
-            '',
-            ''
-        ],
         tags: []
     },
     {
@@ -156,12 +113,6 @@ const SEED_ROUTES: SeedRoute[] = [
         country: 'Spain',
         distance: 7,
         duration: 75,
-        images: [
-            'https://cometeelmundo.net/sites/default/files/styles/max_1300x1300/public/media/blog/monumentos-de-sevilla-setas.jpg?itok=vyTavTWa',
-            '',
-            '',
-            ''
-        ],
         tags: []
     },
     {
@@ -174,12 +125,6 @@ const SEED_ROUTES: SeedRoute[] = [
         country: 'Spain',
         distance: 13,
         duration: 115,
-        images: [
-            'https://img.freepik.com/foto-gratis/amigos-tintinean-vasos-bebida-bar-moderno_1150-18971.jpg?semt=ais_hybrid&w=740&q=80',
-            '',
-            '',
-            ''
-        ],
         tags: []
     },
     {
@@ -192,12 +137,6 @@ const SEED_ROUTES: SeedRoute[] = [
         country: 'Spain',
         distance: 5,
         duration: 55,
-        images: [
-            'https://www.texfoto.com/3192/cuadro-de-la-calle-gran-via-de-dia-de-madrid-n01-bn.jpg',
-            '',
-            '',
-            ''
-        ],
         tags: []
     },
     {
@@ -210,12 +149,6 @@ const SEED_ROUTES: SeedRoute[] = [
         country: 'Spain',
         distance: 14,
         duration: 110,
-        images: [
-            'https://e01-elmundo.uecdn.es/assets/multimedia/imagenes/2023/11/10/16996169796001.jpg',
-            '',
-            '',
-            ''
-        ],
         tags: []
     },
     {
@@ -228,12 +161,6 @@ const SEED_ROUTES: SeedRoute[] = [
         description: 'Madrid in color. A lively itinerary full of energy, diverse neighborhoods, and vibrant places that showcase the city personality.',
         distance: 16,
         duration: 130,
-        images: [
-            'https://cdn.sanity.io/images/nxpteyfv/goguides/4a55354748d15def52cef940c60b860eb64ef1c9-1600x1066.jpg',
-            '',
-            '',
-            ''
-        ],
         tags: []
     },
     {
@@ -246,12 +173,6 @@ const SEED_ROUTES: SeedRoute[] = [
         country: 'Spain',
         distance: 4,
         duration: 50,
-        images: [
-            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbQUhwt4ZDRPkB4WCb_Lup1ILRuz1-vT0Yvg&s',
-            '',
-            '',
-            ''
-        ],
         tags: []
     },
     {
@@ -264,12 +185,6 @@ const SEED_ROUTES: SeedRoute[] = [
         country: 'Spain',
         distance: 6,
         duration: 60,
-        images: [
-            'https://www.iconobarcelonatours.com/wp-content/uploads/2025/08/aerial-view-of-typical-buildings-of-barcelona-city-2025-01-08-03-52-02-utc-min-scaled.webp',
-            '',
-            '',
-            ''
-        ],
         tags: []
     },
     {
@@ -282,12 +197,6 @@ const SEED_ROUTES: SeedRoute[] = [
         country: 'Spain',
         distance: 9,
         duration: 85,
-        images: [
-            'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/09/67/02/25/reial-monestir-de-santa.jpg?w=900&h=500&s=1',
-            '',
-            '',
-            ''
-        ],
         tags: []
     }
 ];
@@ -337,7 +246,6 @@ function mapToInsertableRoute(route: SeedRoute) {
         duration: typeof route.duration === 'number' ? route.duration : 0,
         difficulty: route.difficulty,
         tags: route.tags || [],
-        images: route.images || [],
         userId: route.userId
     };
 }

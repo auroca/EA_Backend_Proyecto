@@ -161,7 +161,7 @@ export const Schemas = {
             participants: Joi.array()
                 .items(Joi.string().pattern(/^[0-9a-fA-F]{24}$/))
                 .min(1)
-                .required(),
+                .optional(),
             password: Joi.string().allow(null, '').optional()
         }),
 

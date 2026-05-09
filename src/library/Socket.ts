@@ -88,7 +88,7 @@ const registerConnectionEvents = (socket: Socket<ClientToServerEvents, ServerToC
      * Handle incoming message from user.
      * Saves to database and broadcasts to all participants in the chat room.
      */
-    socket.on('grup:message', async (data: { chat_id: string; username: string; message: string }) => {
+    socket.on('chat:message', async (data: { chat_id: string; username: string; message: string }) => {
         try {
             const { chat_id: chatId, username, message } = data;
             
@@ -104,7 +104,8 @@ const registerConnectionEvents = (socket: Socket<ClientToServerEvents, ServerToC
             // Broadcast message to all users in the chat room
             const chatRoom = getChatRoomByChatId(chatId);
             const socketServer = getSocketServer();
-            socketServer.to(chatRoom).emit('grup:message', {
+            socketServer.to(chatRoom).emit('chat:message', {
+                chat_id: chatId,
                 username,
                 message,
                 timestamp: new Date()
@@ -122,7 +123,7 @@ const registerConnectionEvents = (socket: Socket<ClientToServerEvents, ServerToC
         // Notify all chat rooms that user left
         const chatRooms = await getUserChatRooms(socket.data.user_id);
         for (const chatId of chatRooms) {
-            await broadcastGrupParticipants(chatId);
+            await broadcastChatParticipants(chatId);
         }
     });
 };
@@ -178,7 +179,7 @@ export const initializeSocket = (server: http.Server) => {
         
         // Notify each room about the updated participants
         for (const chatId of chatRooms) {
-            await broadcastGrupParticipants(chatId);
+            await broadcastChatParticipants(chatId);
         }
 
         registerConnectionEvents(socket);
@@ -249,14 +250,15 @@ export const getChatRoomParticipants = async (chatId: string): Promise<string[]>
  * Broadcast updated participant list to all users in a chat room.
  * Emits current list of connected participants in the room.
  */
-export const broadcastGrupParticipants = async (chatId: string): Promise<void> => {
+export const broadcastChatParticipants = async (chatId: string): Promise<void> => {
     try {
         const chatRoom = getChatRoomByChatId(chatId);
         const socketServer = getSocketServer();
         
         // Get updated participant list and broadcast it
         const participants = await getChatRoomParticipants(chatId);
-        socketServer.to(chatRoom).emit('grup:participants', {
+        socketServer.to(chatRoom).emit('chat:participants', {
+            chat_id: chatId,
             participants,
             count: participants.length,
             timestamp: new Date()
@@ -265,5 +267,48 @@ export const broadcastGrupParticipants = async (chatId: string): Promise<void> =
         Logging.info(`Broadcast participants updated - CHAT_ID: [${chatId}] - PARTICIPANTS: [${participants.join(', ')}]`);
     } catch (error) {
         Logging.error(`Error broadcasting group participants - CHAT_ID: [${chatId}] - ERROR: [${error}]`);
+    }
+};
+
+/**
+ * Broadcast reload signal to connected users to refresh their chat list.
+ * Optionally excludes a specific user (useful when they just created a chat).
+ */
+export const broadcastChatReload = (excludeUserId?: string): void => {
+    try {
+        const socketServer = getSocketServer();
+        
+        if (excludeUserId) {
+            // Emit to all users EXCEPT the specified user by using the private room exclusion
+            const excludeRoom = getPrivateRoomByUserId(excludeUserId);
+            socketServer.except(excludeRoom).emit('chat:reload', { timestamp: new Date() });
+            Logging.info(`Broadcast chat:reload (excluding user: ${excludeUserId})`);
+        } else {
+            // Emit to all connected users
+            socketServer.emit('chat:reload', { timestamp: new Date() });
+            Logging.info('Broadcast chat:reload to all connected users');
+        }
+    } catch (error) {
+        Logging.error(`Error broadcasting chat reload - ERROR: [${error}]`);
+    }
+};
+
+/**
+ * Join all active sockets for a user into a specific chat room.
+ * Useful right after HTTP join to avoid requiring reconnection.
+ */
+export const joinUserToChatRoom = async (userId: string, chatId: string): Promise<void> => {
+    try {
+        const socketServer = getSocketServer();
+        const privateRoom = getPrivateRoomByUserId(userId);
+        const chatRoom = getChatRoomByChatId(chatId);
+        const sockets = await socketServer.in(privateRoom).fetchSockets();
+
+        for (const socket of sockets) {
+            socket.join(chatRoom);
+            Logging.info(`Socket joined chat room - USER_ID: [${socket.data.user_id}] - CHAT_ROOM: [${chatRoom}]`);
+        }
+    } catch (error) {
+        Logging.error(`Error joining user sockets to chat room - USER_ID: [${userId}] - CHAT_ID: [${chatId}] - ERROR: [${error}]`);
     }
 };
