@@ -4,13 +4,13 @@ import { IJwtPayload, UserRole } from '../models/JwtPayload';
 
 export const generateAccessToken = (
     userId: string,
-    name: string,
+    username: string,
     email: string,
     rol: UserRole
 ) => {
     const payload: IJwtPayload = {
         id: userId,
-        name,
+        username,
         email,
         rol
     };
@@ -24,13 +24,13 @@ export const generateAccessToken = (
 
 export const generateRefreshToken = (
     userId: string,
-    name: string,
+    username: string,
     email: string,
     rol: UserRole
 ) => {
     const payload: IJwtPayload = {
         id: userId,
-        name,
+        username,
         email,
         rol
     };

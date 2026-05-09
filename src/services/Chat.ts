@@ -8,7 +8,26 @@ type PaginationParams = {
     page: number;
 };
 
+/**
+ * Check if a chat name already exists.
+ */
+const chatNameExists = async (name: string): Promise<boolean> => {
+    const existingChat = await Chat.findOne({ name: name.toLowerCase() }).exec();
+    return !!existingChat;
+};
+
+/**
+ * Create a new chat room with unique name validation.
+ */
 const createChat = async (data: Partial<IChat>): Promise<IChatModel> => {
+    // Validate unique chat name
+    if (data.name) {
+        const exists = await chatNameExists(data.name);
+        if (exists) {
+            throw new Error(`Chat name "${data.name}" already exists`);
+        }
+    }
+
     const chat = new Chat({
         _id: new mongoose.Types.ObjectId(),
         ...data

@@ -5,6 +5,7 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import { config } from './config/config';
 import Logging from './library/Logging';
+import { initializeSocket } from './library/Socket';
 import UserRoutes from './routes/User';
 import RouteRoutes from './routes/Route';
 import PointRoutes from './routes/Point';
@@ -87,5 +88,9 @@ const StartServer = () => {
         });
     });
 
-    http.createServer(router).listen(config.server.port, () => Logging.info(`Server is running on port ${config.server.port}`));
+    const httpServer = http.createServer(router);
+
+    initializeSocket(httpServer);
+
+    httpServer.listen(config.server.port, () => Logging.info(`Server is running on port ${config.server.port}`));
 };
