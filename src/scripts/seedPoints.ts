@@ -36,6 +36,25 @@ type SeedPoint = {
 
 const OBJECT_ID_REGEX = /^[0-9a-fA-F]{24}$/;
 
+// Map of route IDs to their primary images (moved from routes to first point)
+const ROUTE_IMAGES: Record<string, string> = {
+    '66f000000000000000000001': 'https://www.portugalgreenwalks.com/wordpress/wp-content/uploads/2025/09/Geres-Xures_Cross-Border_Cycling_Holiday-15.jpg',
+    '66f000000000000000000002': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSO6jsvNlx8W-nZnAWQ40KctvwxJT5iHp9tew&s',
+    '66f000000000000000000003': 'https://content-viajes.nationalgeographic.com.es/medio/2025/05/22/porto-do-barqueiro_eaeee80c_1173938656_250522151316_1280x658.webp',
+    '66f000000000000000000004': 'https://pohcdn.com/sites/default/files/styles/paragraph__live_banner__lb_image__1880bp/public/live_banner/Valencia-1.jpg',
+    '66f000000000000000000005': 'https://s3-eu-west-1.amazonaws.com/cv-developments/production%2Fimages%2Fe585121c-423b-cddc-d371-47d433a9bff1%2FEnterrement-de-vie-de-garcon---Budapest---Crazy-Night---Entree-club-Peach.jpg',
+    '66f000000000000000000006': 'https://www.gancarczyk.com/wp-content/uploads/2025/03/valencia-01.jpg',
+    '66f000000000000000000007': 'https://www.elcaminoconcorreos.com/admin/files/articulos/67/que-ver-en-sevilla.jpg',
+    '66f000000000000000000008': 'https://cometeelmundo.net/sites/default/files/styles/max_1300x1300/public/media/blog/monumentos-de-sevilla-setas.jpg?itok=vyTavTWa',
+    '66f000000000000000000009': 'https://img.freepik.com/foto-gratis/amigos-tintinean-vasos-bebida-bar-moderno_1150-18971.jpg?semt=ais_hybrid&w=740&q=80',
+    '66f00000000000000000000a': 'https://www.texfoto.com/3192/cuadro-de-la-calle-gran-via-de-dia-de-madrid-n01-bn.jpg',
+    '66f00000000000000000000b': 'https://e01-elmundo.uecdn.es/assets/multimedia/imagenes/2023/11/10/16996169796001.jpg',
+    '66f00000000000000000000c': 'https://cdn.sanity.io/images/nxpteyfv/goguides/4a55354748d15def52cef940c60b860eb64ef1c9-1600x1066.jpg',
+    '66f00000000000000000000d': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTbQUhwt4ZDRPkB4WCb_Lup1ILRuz1-vT0Yvg&s',
+    '66f00000000000000000000e': 'https://www.iconobarcelonatours.com/wp-content/uploads/2025/08/aerial-view-of-typical-buildings-of-barcelona-city-2025-01-08-03-52-02-utc-min-scaled.webp',
+    '66f00000000000000000000f': 'https://dynamic-media-cdn.tripadvisor.com/media/photo-o/09/67/02/25/reial-monestir-de-santa.jpg?w=900&h=500&s=1'
+};
+
 const CITY_ROUTE_IDS: Record<string, [string, string, string]> = {
     Galicia: [
         '66f000000000000000000001',
@@ -190,6 +209,10 @@ function mapFeatureToSeedPoint(
     }
 
     const [longitude, latitude] = coords;
+    const routeId = routeIdsByCity[routeName - 1];
+    
+    // Assign image to first point of each route
+    const image = feature.properties.Index === 1 ? (ROUTE_IMAGES[routeId] || '') : '';
 
     return {
         _id: makePointObjectId(pointSeq),
@@ -197,8 +220,8 @@ function mapFeatureToSeedPoint(
         description: '',
         latitude,
         longitude,
-        image: '',
-        routeId: routeIdsByCity[routeName - 1],
+        image,
+        routeId,
         index: feature.properties.Index
     };
 }

@@ -1,20 +1,39 @@
 import { NextFunction, Response } from 'express';
+import mongoose from 'mongoose';
 import ChatService from '../services/Chat';
 import { parsePagination } from '../library/Pagination';
 import Filters, { FieldSpec } from '../library/Filters';
 import { AuthRequest } from '../middleware/auth';
+import { broadcastChatParticipants, joinUserToChatRoom, broadcastChatReload } from '../library/Socket';
 
 const createChat = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
+        if (!req.user?.id) {
+            return res.status(401).json({ message: 'User not authenticated' });
+        }
+
         const payload = {
             name: req.body.name,
-            participants: req.body.participants,
+            participants: [new mongoose.Types.ObjectId(req.user.id)], // Add the current user as a participant
             password: req.body.password || null
         };
 
         const savedChat = await ChatService.createChat(payload);
+        
+        // Broadcast updated participants to chat room
+        if (savedChat.participants && Array.isArray(savedChat.participants)) {
+            await broadcastChatParticipants(String(savedChat._id));
+        }
+        
+        // Notify other connected users (except the creator) to reload their chat list
+        broadcastChatReload(req.user.id);
+        
         return res.status(201).json(savedChat);
     } catch (error: any) {
+        // Handle duplicate chat name error
+        if (error.message && error.message.includes('already exists')) {
+            return res.status(409).json({ message: error.message });
+        }
         return res.status(500).json({ error });
     }
 };
@@ -48,7 +67,7 @@ const readAll = async (req: AuthRequest, res: Response, next: NextFunction) => {
             return res.status(400).json({ errors });
         }
 
-        const chats = await ChatService.getAllChats(pagination, filter);
+        const chats = await ChatService.getAllChatsSummary(pagination, filter);
 
         return res.status(200).json(chats);
     } catch (error) {
@@ -126,6 +145,7 @@ const getChatsByUser = async (req: AuthRequest, res: Response, next: NextFunctio
 const joinChat = async (req: AuthRequest, res: Response, next: NextFunction) => {
     const chatId = req.params.chatId ?? req.params.ChatId;
     const userId = req.user?.id;
+    const username = req.user?.username;
     const password = req.body.password;
 
     if (!chatId || !userId || password === undefined) {
@@ -141,6 +161,16 @@ const joinChat = async (req: AuthRequest, res: Response, next: NextFunction) => 
 
         if (joinedChat === 'INVALID_PASSWORD') {
             return res.status(401).json({ message: 'Invalid password' });
+        }
+
+        await joinUserToChatRoom(userId, chatId);
+
+        // Notify other users in chat room with updated participants
+        try {
+            await broadcastChatParticipants(chatId);
+        } catch (socketError) {
+            // If socket fails, still return the joined chat data (socket is optional)
+            console.error('Socket error on chat join:', socketError);
         }
 
         return res.status(200).json(joinedChat);

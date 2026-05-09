@@ -156,7 +156,28 @@ const router = express.Router();
  *         explode: true
  *         schema:
  *           type: object
- *           additionalProperties: true
+ *           properties:
+ *             name:
+ *               type: string
+ *             description:
+ *               type: string
+ *             city:
+ *               type: string
+ *             country:
+ *               type: string
+ *             distance:
+ *               type: number
+ *             duration:
+ *               type: number
+ *             difficulty:
+ *               type: string
+ *             tags:
+ *               type: string
+ *             images:
+ *               type: string
+ *             userId:
+ *               type: string
+ *           additionalProperties: false
  *         description: |
  *           Filter object using `filter[field]=value`. Strings perform substring (case-insensitive).
  *           Numbers require exact match. For array fields (e.g. `tags`) a match occurs if any element contains the value.
