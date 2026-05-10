@@ -2,6 +2,10 @@ import Joi, { ObjectSchema } from 'joi';
 import { NextFunction, Request, Response } from 'express';
 import Logging from '../library/Logging';
 
+const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/;
+
+const passwordMessage = 'La contraseña debe tener al menos 6 caracteres, una mayúscula, un número y un carácter especial';
+
 export const ValidateJoi = (schema: ObjectSchema) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
@@ -30,7 +34,7 @@ export const Schemas = {
     Auth: {
         login: Joi.object({
             email: Joi.string().email().required(),
-            password: Joi.string().min(6).required()
+            password: Joi.string().required()
         })
     },
 
@@ -40,7 +44,11 @@ export const Schemas = {
             surname: Joi.string().required(),
             username: Joi.string().required(),
             email: Joi.string().email().required(),
-            password: Joi.string().min(6).required(),
+            password: Joi.string().pattern(passwordRegex).required().messages({
+                'string.pattern.base': passwordMessage,
+                'string.empty': 'La contraseña es obligatoria',
+                'any.required': 'La contraseña es obligatoria'
+            }),
             enabled: Joi.boolean().optional().default(true),
             role: Joi.string().valid('admin', 'user').optional().default('user')
         }),
@@ -49,7 +57,9 @@ export const Schemas = {
             surname: Joi.string().optional(),
             username: Joi.string().optional(),
             email: Joi.string().email().optional(),
-            password: Joi.string().min(6).optional(),
+            password: Joi.string().pattern(passwordRegex).optional().messages({
+                'string.pattern.base': passwordMessage
+            }),
             enabled: Joi.boolean().optional(),
             role: Joi.string().valid('admin', 'user').optional()
         }).min(1),
