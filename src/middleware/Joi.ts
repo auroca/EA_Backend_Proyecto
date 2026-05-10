@@ -40,7 +40,9 @@ export const Schemas = {
             surname: Joi.string().required(),
             username: Joi.string().required(),
             email: Joi.string().email().required(),
-            password: Joi.string().min(6).required()
+            password: Joi.string().min(6).required(),
+            enabled: Joi.boolean().optional().default(true),
+            role: Joi.string().valid('admin', 'user').optional().default('user')
         }),
         update: Joi.object({
             name: Joi.string().optional(),

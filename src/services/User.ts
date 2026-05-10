@@ -2,6 +2,9 @@ import mongoose from 'mongoose';
 import User, { IUserModel, IUser } from '../models/User';
 import RouteModel from '../models/Route';
 import PointModel from '../models/Point';
+import HistoryService from './History';
+
+const USER_FIELDS = ['name', 'surname', 'username', 'email', 'password', 'enabled', 'role'];
 
 type PaginationLimit = 10 | 25 | 50;
 
@@ -29,7 +32,16 @@ const createUser = async (data: Partial<IUser>): Promise<IUserModel> => {
         ...data
     });
 
-    return await user.save();
+    const savedUser = await user.save();
+
+    await HistoryService.recordHistory(
+        'USER',
+        'CREATE',
+        String(savedUser._id),
+        HistoryService.buildCreateChanges(savedUser.toObject() as Record<string, unknown>, USER_FIELDS)
+    );
+
+    return savedUser;
 };
 
 const getUser = async (userId: string): Promise<IUserModel | null> => {
@@ -69,15 +81,48 @@ const updateUser = async (userId: string, data: Partial<IUser>): Promise<IUserMo
         return null;
     }
 
-    if (data.email) {
-        data.email = data.email.toLowerCase();
+    const normalizedData: Partial<IUser> = { ...data };
+
+    if (normalizedData.email) {
+        normalizedData.email = normalizedData.email.toLowerCase();
     }
 
-    user.set(data);
-    return await user.save();
+    const before = user.toObject() as Record<string, unknown>;
+    const afterPreview = {
+        ...before,
+        ...normalizedData
+    } as Record<string, unknown>;
+
+    const changedFields = HistoryService.buildModifyChanges(before, afterPreview, USER_FIELDS).map(
+        (change) => change.fieldName
+    );
+
+    if (changedFields.length === 0) {
+        return user;
+    }
+
+    user.set(normalizedData);
+    const savedUser = await user.save();
+    const after = savedUser.toObject() as Record<string, unknown>;
+
+    await HistoryService.recordHistory(
+        'USER',
+        changedFields.length === 1 && changedFields[0] === 'enabled' ? 'STATUS' : 'MODIFY',
+        String(savedUser._id),
+        HistoryService.buildModifyChanges(before, after, changedFields)
+    );
+
+    return savedUser;
 };
 
 const deleteUser = async (userId: string): Promise<IUserModel | null> => {
+    const user = await User.findById(userId).exec();
+
+    if (!user) {
+        return null;
+    }
+
+    const before = user.toObject() as Record<string, unknown>;
     const routes = await RouteModel.find({ userId }).select('_id').lean().exec();
     const routeIds = routes.map((route) => route._id);
 
@@ -86,7 +131,20 @@ const deleteUser = async (userId: string): Promise<IUserModel | null> => {
         await RouteModel.deleteMany({ userId }).exec();
     }
 
-    return await User.findByIdAndDelete(userId).exec();
+    const deletedUser = await User.findByIdAndDelete(userId).exec();
+
+    if (!deletedUser) {
+        return null;
+    }
+
+    await HistoryService.recordHistory(
+        'USER',
+        'DELETE',
+        String(deletedUser._id),
+        HistoryService.buildDeleteChanges(before, USER_FIELDS)
+    );
+
+    return deletedUser;
 };
 
 const getFavoriteRoutes = async (userId: string) => {
