@@ -1,5 +1,8 @@
 import PointModel, { IPoint } from '../models/Point';
 import { PaginationParams } from '../library/Pagination';
+import HistoryService from './History';
+
+const POINT_FIELDS = ['name', 'description', 'latitude', 'longitude', 'image', 'routeId', 'index'];
 
 type PaginatedResult<T> = {
     data: T[];
@@ -15,7 +18,16 @@ type ListResult<T> = PaginatedResult<T> | T[];
 
 const createPoint = async (input: IPoint) => {
     const point = new PointModel(input);
-    return await point.save();
+    const savedPoint = await point.save();
+
+    await HistoryService.recordHistory(
+        'POINT',
+        'CREATE',
+        String(savedPoint._id),
+        HistoryService.buildCreateChanges(savedPoint.toObject() as Record<string, unknown>, POINT_FIELDS)
+    );
+
+    return savedPoint;
 };
 
 const getPoint = async (pointId: string) => {
@@ -53,11 +65,61 @@ const getPointsByRoute = async (routeId: string) => {
 };
 
 const updatePoint = async (pointId: string, input: Partial<IPoint>) => {
-    return await PointModel.findByIdAndUpdate(pointId, input, { new: true }).exec();
+    const point = await PointModel.findById(pointId).exec();
+
+    if (!point) {
+        return null;
+    }
+
+    const before = point.toObject() as Record<string, unknown>;
+    const afterPreview = {
+        ...before,
+        ...input
+    } as Record<string, unknown>;
+
+    const changedFields = HistoryService.buildModifyChanges(before, afterPreview, POINT_FIELDS).map(
+        (change) => change.fieldName
+    );
+
+    if (changedFields.length === 0) {
+        return point;
+    }
+
+    point.set(input);
+    const savedPoint = await point.save();
+
+    await HistoryService.recordHistory(
+        'POINT',
+        'MODIFY',
+        String(savedPoint._id),
+        HistoryService.buildModifyChanges(before, savedPoint.toObject() as Record<string, unknown>, changedFields)
+    );
+
+    return savedPoint;
 };
 
 const deletePoint = async (pointId: string) => {
-    return await PointModel.findByIdAndDelete(pointId).exec();
+    const point = await PointModel.findById(pointId).exec();
+
+    if (!point) {
+        return null;
+    }
+
+    const before = point.toObject() as Record<string, unknown>;
+    const deletedPoint = await PointModel.findByIdAndDelete(pointId).exec();
+
+    if (!deletedPoint) {
+        return null;
+    }
+
+    await HistoryService.recordHistory(
+        'POINT',
+        'DELETE',
+        String(deletedPoint._id),
+        HistoryService.buildDeleteChanges(before, POINT_FIELDS)
+    );
+
+    return deletedPoint;
 };
 
 export default {
