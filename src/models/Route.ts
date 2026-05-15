@@ -3,6 +3,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 export interface IRoute {
     name: string;
     description: string;
+    cover_image: string;
     city: string;
     country: string;
     distance: number;
@@ -18,6 +19,7 @@ const RouteSchema: Schema = new Schema(
     {
         name: { type: String, required: true },
         description: { type: String, required: true },
+        cover_image: { type: String, required: true },
         city: { type: String, required: true },
         country: { type: String, required: true },
         distance: { type: Number, required: true },

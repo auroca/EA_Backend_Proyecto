@@ -83,6 +83,7 @@ export const Schemas = {
         create: Joi.object({
             name: Joi.string().required(),
             description: Joi.string().required(),
+            cover_image: Joi.string().required(),
             city: Joi.string().required(),
             country: Joi.string().required(),
             distance: Joi.number().required(),
@@ -90,6 +91,18 @@ export const Schemas = {
             difficulty: Joi.string().valid('easy', 'medium', 'hard').required(),
             tags: Joi.array().items(Joi.string()).optional(),
             images: Joi.array().items(Joi.string()).optional(),
+            points: Joi.array()
+                .items(
+                    Joi.object({
+                        name: Joi.string().required(),
+                        description: Joi.string().allow('').optional(),
+                        latitude: Joi.number().required(),
+                        longitude: Joi.number().required(),
+                        image: Joi.string().allow('').optional(),
+                        index: Joi.number().integer().min(0).optional()
+                    })
+                )
+                .optional(),
             userId: Joi.string()
                 .pattern(/^[0-9a-fA-F]{24}$/)
                 .optional()
@@ -98,6 +111,7 @@ export const Schemas = {
         update: Joi.object({
             name: Joi.string().optional(),
             description: Joi.string().optional(),
+            cover_image: Joi.string().optional(),
             city: Joi.string().optional(),
             country: Joi.string().optional(),
             distance: Joi.number().optional(),
@@ -106,11 +120,12 @@ export const Schemas = {
             tags: Joi.array().items(Joi.string()).optional(),
             images: Joi.array().items(Joi.string()).optional()
         }).min(1),
-        // Query/list schema for filter and pagination
+
         listQuery: Joi.object({
             filter: Joi.object({
                 name: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
                 description: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
+                cover_image: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
                 city: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
                 country: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
                 distance: Joi.alternatives().try(Joi.number(), Joi.array().items(Joi.number())).optional(),
@@ -151,6 +166,7 @@ export const Schemas = {
                 .optional(),
             index: Joi.number().integer().min(0).optional()
         }).min(1),
+
         listQuery: Joi.object({
             filter: Joi.object({
                 name: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
