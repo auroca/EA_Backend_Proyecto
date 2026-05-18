@@ -2,6 +2,10 @@ import Joi, { ObjectSchema } from 'joi';
 import { NextFunction, Request, Response } from 'express';
 import Logging from '../library/Logging';
 
+const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/;
+
+const passwordMessage = 'La contraseña debe tener al menos 6 caracteres, una mayúscula, un número y un carácter especial';
+
 export const ValidateJoi = (schema: ObjectSchema) => {
     return async (req: Request, res: Response, next: NextFunction) => {
         try {
@@ -30,7 +34,7 @@ export const Schemas = {
     Auth: {
         login: Joi.object({
             email: Joi.string().email().required(),
-            password: Joi.string().min(6).required()
+            password: Joi.string().required()
         })
     },
 
@@ -40,14 +44,22 @@ export const Schemas = {
             surname: Joi.string().required(),
             username: Joi.string().required(),
             email: Joi.string().email().required(),
-            password: Joi.string().min(6).required()
+            password: Joi.string().pattern(passwordRegex).required().messages({
+                'string.pattern.base': passwordMessage,
+                'string.empty': 'La contraseña es obligatoria',
+                'any.required': 'La contraseña es obligatoria'
+            }),
+            enabled: Joi.boolean().optional().default(true),
+            role: Joi.string().valid('admin', 'user').optional().default('user')
         }),
         update: Joi.object({
             name: Joi.string().optional(),
             surname: Joi.string().optional(),
             username: Joi.string().optional(),
             email: Joi.string().email().optional(),
-            password: Joi.string().min(6).optional(),
+            password: Joi.string().pattern(passwordRegex).optional().messages({
+                'string.pattern.base': passwordMessage
+            }),
             enabled: Joi.boolean().optional(),
             role: Joi.string().valid('admin', 'user').optional()
         }).min(1),
@@ -71,6 +83,7 @@ export const Schemas = {
         create: Joi.object({
             name: Joi.string().required(),
             description: Joi.string().required(),
+            cover_image: Joi.string().required(),
             city: Joi.string().required(),
             country: Joi.string().required(),
             distance: Joi.number().required(),
@@ -78,6 +91,18 @@ export const Schemas = {
             difficulty: Joi.string().valid('easy', 'medium', 'hard').required(),
             tags: Joi.array().items(Joi.string()).optional(),
             images: Joi.array().items(Joi.string()).optional(),
+            points: Joi.array()
+                .items(
+                    Joi.object({
+                        name: Joi.string().required(),
+                        description: Joi.string().allow('').optional(),
+                        latitude: Joi.number().required(),
+                        longitude: Joi.number().required(),
+                        image: Joi.string().allow('').optional(),
+                        index: Joi.number().integer().min(0).optional()
+                    })
+                )
+                .optional(),
             userId: Joi.string()
                 .pattern(/^[0-9a-fA-F]{24}$/)
                 .optional()
@@ -86,6 +111,7 @@ export const Schemas = {
         update: Joi.object({
             name: Joi.string().optional(),
             description: Joi.string().optional(),
+            cover_image: Joi.string().optional(),
             city: Joi.string().optional(),
             country: Joi.string().optional(),
             distance: Joi.number().optional(),
@@ -94,11 +120,12 @@ export const Schemas = {
             tags: Joi.array().items(Joi.string()).optional(),
             images: Joi.array().items(Joi.string()).optional()
         }).min(1),
-        // Query/list schema for filter and pagination
+
         listQuery: Joi.object({
             filter: Joi.object({
                 name: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
                 description: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
+                cover_image: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
                 city: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
                 country: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
                 distance: Joi.alternatives().try(Joi.number(), Joi.array().items(Joi.number())).optional(),
@@ -139,6 +166,7 @@ export const Schemas = {
                 .optional(),
             index: Joi.number().integer().min(0).optional()
         }).min(1),
+
         listQuery: Joi.object({
             filter: Joi.object({
                 name: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),
