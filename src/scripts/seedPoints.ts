@@ -42,7 +42,8 @@ const ROUTE_IMAGES: Record<string, string> = {
     '66f000000000000000000002': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSO6jsvNlx8W-nZnAWQ40KctvwxJT5iHp9tew&s',
     '66f000000000000000000003': 'https://content-viajes.nationalgeographic.com.es/medio/2025/05/22/porto-do-barqueiro_eaeee80c_1173938656_250522151316_1280x658.webp',
     '66f000000000000000000004': 'https://pohcdn.com/sites/default/files/styles/paragraph__live_banner__lb_image__1880bp/public/live_banner/Valencia-1.jpg',
-    '66f000000000000000000005': 'https://s3-eu-west-1.amazonaws.com/cv-developments/production%2Fimages%2Fe585121c-423b-cddc-d371-47d433a9bff1%2FEnterrement-de-vie-de-garcon---Budapest---Crazy-Night---Entree-club-Peach.jpg',
+    '66f000000000000000000005':
+        'https://s3-eu-west-1.amazonaws.com/cv-developments/production%2Fimages%2Fe585121c-423b-cddc-d371-47d433a9bff1%2FEnterrement-de-vie-de-garcon---Budapest---Crazy-Night---Entree-club-Peach.jpg',
     '66f000000000000000000006': 'https://www.gancarczyk.com/wp-content/uploads/2025/03/valencia-01.jpg',
     '66f000000000000000000007': 'https://www.elcaminoconcorreos.com/admin/files/articulos/67/que-ver-en-sevilla.jpg',
     '66f000000000000000000008': 'https://cometeelmundo.net/sites/default/files/styles/max_1300x1300/public/media/blog/monumentos-de-sevilla-setas.jpg?itok=vyTavTWa',
@@ -56,31 +57,11 @@ const ROUTE_IMAGES: Record<string, string> = {
 };
 
 const CITY_ROUTE_IDS: Record<string, [string, string, string]> = {
-    Galicia: [
-        '66f000000000000000000001',
-        '66f000000000000000000002',
-        '66f000000000000000000003'
-    ],
-    Valencia: [
-        '66f000000000000000000004',
-        '66f000000000000000000005',
-        '66f000000000000000000006'
-    ],
-    Sevilla: [
-        '66f000000000000000000007',
-        '66f000000000000000000008',
-        '66f000000000000000000009'
-    ],
-    Madrid: [
-        '66f00000000000000000000a',
-        '66f00000000000000000000b',
-        '66f00000000000000000000c'
-    ],
-    Barcelona: [
-        '66f00000000000000000000d',
-        '66f00000000000000000000e',
-        '66f00000000000000000000f'
-    ]
+    Galicia: ['66f000000000000000000001', '66f000000000000000000002', '66f000000000000000000003'],
+    Valencia: ['66f000000000000000000004', '66f000000000000000000005', '66f000000000000000000006'],
+    Sevilla: ['66f000000000000000000007', '66f000000000000000000008', '66f000000000000000000009'],
+    Madrid: ['66f00000000000000000000a', '66f00000000000000000000b', '66f00000000000000000000c'],
+    Barcelona: ['66f00000000000000000000d', '66f00000000000000000000e', '66f00000000000000000000f']
 };
 
 // Add future city payloads here (Valencia, Sevilla, etc.)
@@ -192,12 +173,7 @@ function makePointObjectId(index: number): string {
     return `67f000000000000000${suffix}`;
 }
 
-function mapFeatureToSeedPoint(
-    feature: GeoFeature,
-    city: string,
-    routeIdsByCity: [string, string, string],
-    pointSeq: number
-): SeedPoint {
+function mapFeatureToSeedPoint(feature: GeoFeature, city: string, routeIdsByCity: [string, string, string], pointSeq: number): SeedPoint {
     const routeName = feature.properties.RouteName;
     if (!Number.isInteger(routeName) || routeName < 1 || routeName > 3) {
         throw new Error(`Invalid RouteName in ${city} (feature id ${feature.id})`);
@@ -210,9 +186,9 @@ function mapFeatureToSeedPoint(
 
     const [longitude, latitude] = coords;
     const routeId = routeIdsByCity[routeName - 1];
-    
+
     // Assign image to first point of each route
-    const image = feature.properties.Index === 1 ? (ROUTE_IMAGES[routeId] || '') : '';
+    const image = feature.properties.Index === 1 ? ROUTE_IMAGES[routeId] || '' : '';
 
     return {
         _id: makePointObjectId(pointSeq),

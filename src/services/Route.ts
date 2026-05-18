@@ -47,9 +47,7 @@ const formatRouteResponse = (route: any): RouteResponse | null => {
     const routeObject = typeof route.toObject === 'function' ? route.toObject() : route;
     const points = Array.isArray(routeObject.points) ? routeObject.points : [];
 
-    const images = points
-        .map((point: any) => point.image)
-        .filter((image: unknown): image is string => typeof image === 'string' && image.trim() !== '');
+    const images = points.map((point: any) => point.image).filter((image: unknown): image is string => typeof image === 'string' && image.trim() !== '');
 
     return {
         ...routeObject,
@@ -73,10 +71,7 @@ const getRoute = async (routeId: string) => {
     return formatRouteResponse(route);
 };
 
-const getAllRoutes = async (
-    pagination?: PaginationParams,
-    filter?: any
-): Promise<ListResult<IRoute>> => {
+const getAllRoutes = async (pagination?: PaginationParams, filter?: any): Promise<ListResult<IRoute>> => {
     const effectiveFilter = filter && Object.keys(filter).length ? filter : {};
 
     if (!pagination) {
@@ -87,10 +82,7 @@ const getAllRoutes = async (
     const { limit, page } = pagination;
     const skip = (page - 1) * limit;
 
-    const [data, total] = await Promise.all([
-        populateRoutePoints(RouteModel.find(effectiveFilter).sort({ _id: 1 }).skip(skip).limit(limit)).exec(),
-        RouteModel.countDocuments(effectiveFilter)
-    ]);
+    const [data, total] = await Promise.all([populateRoutePoints(RouteModel.find(effectiveFilter).sort({ _id: 1 }).skip(skip).limit(limit)).exec(), RouteModel.countDocuments(effectiveFilter)]);
 
     return {
         data: data.map((route: any) => formatRouteResponse(route)),
@@ -104,9 +96,7 @@ const getAllRoutes = async (
 };
 
 const updateRoute = async (routeId: string, input: Partial<IRoute>) => {
-    return await RouteModel.findByIdAndUpdate(routeId, input, { new: true })
-        .populate('points')
-        .exec();
+    return await RouteModel.findByIdAndUpdate(routeId, input, { new: true }).populate('points').exec();
 };
 
 const deleteRoute = async (routeId: string) => {

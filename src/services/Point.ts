@@ -32,10 +32,7 @@ const getAllPoints = async (pagination?: PaginationParams, filter?: any): Promis
     const { limit, page } = pagination;
     const skip = (page - 1) * limit;
 
-    const [data, total] = await Promise.all([
-        PointModel.find(effectiveFilter).sort({ _id: 1 }).skip(skip).limit(limit).exec(),
-        PointModel.countDocuments(effectiveFilter)
-    ]);
+    const [data, total] = await Promise.all([PointModel.find(effectiveFilter).sort({ _id: 1 }).skip(skip).limit(limit).exec(), PointModel.countDocuments(effectiveFilter)]);
 
     return {
         data,

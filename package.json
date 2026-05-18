@@ -9,7 +9,7 @@
         "postinstall": "tsc",
         "import_data": "node build/scripts/seedBackend.js",
         "prepare": "husky",
-        "lint": "eslint",
+        "lint": "eslint --quiet .",
         "lint:fix": "eslint --fix",
         "format": "prettier --write .",
         "format:check": "prettier --check ."
@@ -55,6 +55,7 @@
         "eslint-plugin-prettier": "^5.5.5",
         "globals": "^17.6.0",
         "husky": "^9.1.7",
+        "jiti": "^2.7.0",
         "lint-staged": "^17.0.3",
         "prettier": "3.8.3",
         "typescript": "^4.5.5",

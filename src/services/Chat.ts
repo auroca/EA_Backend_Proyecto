@@ -62,11 +62,7 @@ const getAllChats = async (pagination?: PaginationParams, filter?: any): Promise
 const getAllChatsSummary = async (pagination?: PaginationParams, filter?: any): Promise<ChatSummary[]> => {
     const effectiveFilter = filter && Object.keys(filter).length ? filter : {};
 
-    const query = Chat.find(effectiveFilter)
-        .sort({ _id: 1 })
-        .select('_id name')
-        .select('+password')
-        .lean<{ _id: mongoose.Types.ObjectId; name: string; password?: string | null }[]>();
+    const query = Chat.find(effectiveFilter).sort({ _id: 1 }).select('_id name').select('+password').lean<{ _id: mongoose.Types.ObjectId; name: string; password?: string | null }[]>();
 
     if (pagination) {
         const { limit, page } = pagination;
