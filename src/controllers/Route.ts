@@ -28,9 +28,7 @@ const readRoute = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
         const route = await RouteService.getRoute(routeId);
-        return route
-            ? res.status(200).json(route)
-            : res.status(404).json({ message: 'not found' });
+        return route ? res.status(200).json(route) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }
@@ -74,9 +72,7 @@ const updateRoute = async (req: Request, res: Response, next: NextFunction) => {
         delete data.userId;
 
         const updatedRoute = await RouteService.updateRoute(routeId, data);
-        return updatedRoute
-            ? res.status(200).json(updatedRoute)
-            : res.status(404).json({ message: 'not found' });
+        return updatedRoute ? res.status(200).json(updatedRoute) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }
@@ -87,9 +83,7 @@ const deleteRoute = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
         const route = await RouteService.deleteRoute(routeId);
-        return route
-            ? res.status(200).json(route)
-            : res.status(404).json({ message: 'not found' });
+        return route ? res.status(200).json(route) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }

@@ -72,7 +72,7 @@ export const createSocketUserSession = (userId: string, username: string): Socke
 const getUserChatRooms = async (userId: string): Promise<string[]> => {
     try {
         const chats = await Chat.find({ participants: userId }).select('_id').exec();
-        return chats.map(chat => String(chat._id));
+        return chats.map((chat) => String(chat._id));
     } catch (error) {
         Logging.error(`Error fetching user chat rooms - USER_ID: [${userId}] - ERROR: [${error}]`);
         return [];
@@ -91,16 +91,16 @@ const registerConnectionEvents = (socket: Socket<ClientToServerEvents, ServerToC
     socket.on('chat:message', async (data: { chat_id: string; username: string; message: string }) => {
         try {
             const { chat_id: chatId, username, message } = data;
-            
+
             // Validate username matches socket identity
             if (username !== socket.data.username) {
                 Logging.error(`Username mismatch - SOCKET_USER: [${socket.data.username}] - SENT_USER: [${username}]`);
                 return;
             }
-            
+
             // Save message to database
             await ChatService.addMessage(chatId, socket.data.user_id, message);
-            
+
             // Broadcast message to all users in the chat room
             const chatRoom = getChatRoomByChatId(chatId);
             const socketServer = getSocketServer();
@@ -110,7 +110,7 @@ const registerConnectionEvents = (socket: Socket<ClientToServerEvents, ServerToC
                 message,
                 timestamp: new Date()
             });
-            
+
             Logging.info(`Chat message - CHAT_ID: [${chatId}] - USERNAME: [${username}] - MESSAGE: [${message}]`);
         } catch (error) {
             Logging.error(`Error handling chat message - ERROR: [${error}]`);
@@ -119,7 +119,7 @@ const registerConnectionEvents = (socket: Socket<ClientToServerEvents, ServerToC
 
     socket.on('disconnect', async (reason) => {
         Logging.info(`Socket disconnected - USER_ID: [${socket.data.user_id}] - REASON: [${reason}]`);
-        
+
         // Notify all chat rooms that user left
         const chatRooms = await getUserChatRooms(socket.data.user_id);
         for (const chatId of chatRooms) {
@@ -167,16 +167,14 @@ export const initializeSocket = (server: http.Server) => {
     io.on('connection', async (socket) => {
         socket.join(socket.data.room);
 
-        Logging.info(
-            `Socket connected - USER_ID: [${socket.data.user_id}] - USERNAME: [${socket.data.username}] - ROOM: [${socket.data.room}]`
-        );
-        
+        Logging.info(`Socket connected - USER_ID: [${socket.data.user_id}] - USERNAME: [${socket.data.username}] - ROOM: [${socket.data.room}]`);
+
         // Auto-join user to all their chat rooms from database
         const chatRooms = await getUserChatRooms(socket.data.user_id);
         for (const chatId of chatRooms) {
             joinChatRoom(socket, chatId);
         }
-        
+
         // Notify each room about the updated participants
         for (const chatId of chatRooms) {
             await broadcastChatParticipants(chatId);
@@ -234,11 +232,11 @@ export const getChatRoomParticipants = async (chatId: string): Promise<string[]>
     try {
         const socketServer = getSocketServer();
         const chatRoom = getChatRoomByChatId(chatId);
-        
+
         // Fetch all connected sockets and filter by room
         const sockets = await socketServer.in(chatRoom).fetchSockets();
-        const usernames = sockets.map(socket => socket.data.username).filter(Boolean);
-        
+        const usernames = sockets.map((socket) => socket.data.username).filter(Boolean);
+
         return usernames;
     } catch (error) {
         Logging.error(`Error fetching chat room participants - CHAT_ID: [${chatId}] - ERROR: [${error}]`);
@@ -254,7 +252,7 @@ export const broadcastChatParticipants = async (chatId: string): Promise<void> =
     try {
         const chatRoom = getChatRoomByChatId(chatId);
         const socketServer = getSocketServer();
-        
+
         // Get updated participant list and broadcast it
         const participants = await getChatRoomParticipants(chatId);
         socketServer.to(chatRoom).emit('chat:participants', {
@@ -263,7 +261,7 @@ export const broadcastChatParticipants = async (chatId: string): Promise<void> =
             count: participants.length,
             timestamp: new Date()
         });
-        
+
         Logging.info(`Broadcast participants updated - CHAT_ID: [${chatId}] - PARTICIPANTS: [${participants.join(', ')}]`);
     } catch (error) {
         Logging.error(`Error broadcasting group participants - CHAT_ID: [${chatId}] - ERROR: [${error}]`);
@@ -277,7 +275,7 @@ export const broadcastChatParticipants = async (chatId: string): Promise<void> =
 export const broadcastChatReload = (excludeUserId?: string): void => {
     try {
         const socketServer = getSocketServer();
-        
+
         if (excludeUserId) {
             // Emit to all users EXCEPT the specified user by using the private room exclusion
             const excludeRoom = getPrivateRoomByUserId(excludeUserId);

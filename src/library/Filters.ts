@@ -24,10 +24,7 @@ const toBoolean = (v: any): boolean | null => {
     return null;
 };
 
-export const parseFilters = (
-    queryFilter: any,
-    allowedFields: FieldSpec[]
-): { filter: any; errors: string[] } => {
+export const parseFilters = (queryFilter: any, allowedFields: FieldSpec[]): { filter: any; errors: string[] } => {
     const errors: string[] = [];
     const conditions: any[] = [];
 

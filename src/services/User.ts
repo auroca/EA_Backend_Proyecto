@@ -152,22 +152,14 @@ const getFavoriteRoutes = async (userId: string) => {
 };
 
 const addFavoriteRoute = async (userId: string, routeId: string) => {
-    return await User.findByIdAndUpdate(
-        userId,
-        { $addToSet: { favoriteRoutes: routeId } },
-        { new: true }
-    )
+    return await User.findByIdAndUpdate(userId, { $addToSet: { favoriteRoutes: routeId } }, { new: true })
         .populate('favoriteRoutes')
         .select('favoriteRoutes')
         .exec();
 };
 
 const removeFavoriteRoute = async (userId: string, routeId: string) => {
-    return await User.findByIdAndUpdate(
-        userId,
-        { $pull: { favoriteRoutes: routeId } },
-        { new: true }
-    )
+    return await User.findByIdAndUpdate(userId, { $pull: { favoriteRoutes: routeId } }, { new: true })
         .populate('favoriteRoutes')
         .select('favoriteRoutes')
         .exec();

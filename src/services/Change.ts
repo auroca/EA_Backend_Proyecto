@@ -2,6 +2,16 @@ import mongoose from 'mongoose';
 import ChangeModel, { IChange } from '../models/Change';
 import HistoryModel from '../models/History';
 
+const toObjectId = (value: unknown): mongoose.Types.ObjectId | null => {
+    const objectIdValue = String(value);
+
+    if (!mongoose.Types.ObjectId.isValid(objectIdValue)) {
+        return null;
+    }
+
+    return new mongoose.Types.ObjectId(objectIdValue);
+};
+
 const getAllChanges = async () => {
     return await ChangeModel.find().sort({ _id: -1 }).populate('historyId').exec();
 };
@@ -11,19 +21,22 @@ const getChange = async (changeId: string) => {
 };
 
 const createChange = async (data: Partial<IChange>) => {
-    if (!data.historyId || !data.objectId || !data.fieldName) {
+    const historyId = toObjectId(data.historyId);
+    const objectId = toObjectId(data.objectId);
+
+    if (!historyId || !objectId || !data.fieldName) {
         return null;
     }
 
-    const history = await HistoryModel.findById(data.historyId).exec();
+    const history = await HistoryModel.findById(historyId).exec();
 
     if (!history) {
         return null;
     }
 
     const change = new ChangeModel({
-        historyId: new mongoose.Types.ObjectId(String(data.historyId)),
-        objectId: new mongoose.Types.ObjectId(String(data.objectId)),
+        historyId,
+        objectId,
         fieldName: data.fieldName,
         beforeValue: data.beforeValue ?? null,
         afterValue: data.afterValue ?? null,
@@ -47,15 +60,19 @@ const updateChange = async (changeId: string, data: Partial<IChange>) => {
     const previousHistoryId = change.historyId.toString();
 
     if (data.historyId && data.historyId.toString() !== previousHistoryId) {
+        const nextHistoryId = toObjectId(data.historyId);
+
+        if (!nextHistoryId) {
+            return null;
+        }
+
         const previousHistory = await HistoryModel.findById(previousHistoryId).exec();
         if (previousHistory) {
-            previousHistory.changes = previousHistory.changes.filter(
-                (currentChangeId) => currentChangeId.toString() !== change._id.toString()
-            );
+            previousHistory.changes = previousHistory.changes.filter((currentChangeId) => currentChangeId.toString() !== change._id.toString());
             await previousHistory.save();
         }
 
-        const nextHistory = await HistoryModel.findById(data.historyId).exec();
+        const nextHistory = await HistoryModel.findById(nextHistoryId).exec();
         if (!nextHistory) {
             return null;
         }
@@ -63,11 +80,17 @@ const updateChange = async (changeId: string, data: Partial<IChange>) => {
         nextHistory.changes.push(change._id);
         await nextHistory.save();
 
-        change.historyId = new mongoose.Types.ObjectId(String(data.historyId));
+        change.historyId = nextHistoryId;
     }
 
     if (data.objectId) {
-        change.objectId = new mongoose.Types.ObjectId(String(data.objectId));
+        const objectId = toObjectId(data.objectId);
+
+        if (!objectId) {
+            return null;
+        }
+
+        change.objectId = objectId;
     }
 
     if (data.fieldName !== undefined) {
@@ -99,9 +122,7 @@ const deleteChange = async (changeId: string) => {
     const history = await HistoryModel.findById(change.historyId).exec();
 
     if (history) {
-        history.changes = history.changes.filter(
-            (currentChangeId) => currentChangeId.toString() !== change._id.toString()
-        );
+        history.changes = history.changes.filter((currentChangeId) => currentChangeId.toString() !== change._id.toString());
         await history.save();
     }
 

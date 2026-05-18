@@ -2,12 +2,7 @@ import jwt from 'jsonwebtoken';
 import { config } from '../config/config';
 import { IJwtPayload, UserRole } from '../models/JwtPayload';
 
-export const generateAccessToken = (
-    userId: string,
-    username: string,
-    email: string,
-    rol: UserRole
-) => {
+export const generateAccessToken = (userId: string, username: string, email: string, rol: UserRole) => {
     const payload: IJwtPayload = {
         id: userId,
         username,
@@ -15,19 +10,10 @@ export const generateAccessToken = (
         rol
     };
 
-    return jwt.sign(
-        payload,
-        config.jwt.accessSecret,
-        { expiresIn: config.jwt.accessExpiresIn as jwt.SignOptions['expiresIn'] }
-    );
+    return jwt.sign(payload, config.jwt.accessSecret, { expiresIn: config.jwt.accessExpiresIn as jwt.SignOptions['expiresIn'] });
 };
 
-export const generateRefreshToken = (
-    userId: string,
-    username: string,
-    email: string,
-    rol: UserRole
-) => {
+export const generateRefreshToken = (userId: string, username: string, email: string, rol: UserRole) => {
     const payload: IJwtPayload = {
         id: userId,
         username,
@@ -35,11 +21,7 @@ export const generateRefreshToken = (
         rol
     };
 
-    return jwt.sign(
-        payload,
-        config.jwt.refreshSecret,
-        { expiresIn: config.jwt.refreshExpiresIn as jwt.SignOptions['expiresIn'] }
-    );
+    return jwt.sign(payload, config.jwt.refreshSecret, { expiresIn: config.jwt.refreshExpiresIn as jwt.SignOptions['expiresIn'] });
 };
 
 export const verifyAccessToken = (token: string) => {

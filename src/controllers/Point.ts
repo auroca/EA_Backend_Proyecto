@@ -17,9 +17,7 @@ const readPoint = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
         const point = await PointService.getPoint(pointId);
-        return point
-            ? res.status(200).json(point)
-            : res.status(404).json({ message: 'not found' });
+        return point ? res.status(200).json(point) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }
@@ -67,9 +65,7 @@ const updatePoint = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
         const updatedPoint = await PointService.updatePoint(pointId, req.body);
-        return updatedPoint
-            ? res.status(200).json(updatedPoint)
-            : res.status(404).json({ message: 'not found' });
+        return updatedPoint ? res.status(200).json(updatedPoint) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }
@@ -80,9 +76,7 @@ const deletePoint = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
         const point = await PointService.deletePoint(pointId);
-        return point
-            ? res.status(200).json(point)
-            : res.status(404).json({ message: 'not found' });
+        return point ? res.status(200).json(point) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }

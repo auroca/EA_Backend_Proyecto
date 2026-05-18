@@ -76,6 +76,12 @@ const recordHistory = async (
     objectId: string,
     changes: HistoryChange[]
 ) => {
+    if (!mongoose.Types.ObjectId.isValid(objectId)) {
+        throw new Error('Invalid objectId');
+    }
+
+    const parsedObjectId = new mongoose.Types.ObjectId(objectId);
+
     const history = await new HistoryModel({
         action,
         entity,
@@ -85,7 +91,7 @@ const recordHistory = async (
     const changeDocuments = await ChangeModel.insertMany(
         changes.map((change) => ({
             historyId: history._id,
-            objectId: new mongoose.Types.ObjectId(objectId),
+            objectId: parsedObjectId,
             fieldName: change.fieldName,
             beforeValue: change.beforeValue,
             afterValue: change.afterValue

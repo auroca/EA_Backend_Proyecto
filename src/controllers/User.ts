@@ -35,9 +35,7 @@ const readUser = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
         const user = await UserService.getUser(userId);
-        return user
-            ? res.status(200).json(user)
-            : res.status(404).json({ message: 'not found' });
+        return user ? res.status(200).json(user) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }
@@ -78,9 +76,7 @@ const updateUser = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
         const updatedUser = await UserService.updateUser(userId, req.body);
-        return updatedUser
-            ? res.status(200).json(updatedUser)
-            : res.status(404).json({ message: 'not found' });
+        return updatedUser ? res.status(200).json(updatedUser) : res.status(404).json({ message: 'not found' });
     } catch (error: any) {
         if (error?.code === 11000) {
             return res.status(409).json({ message: 'Username or email already exists' });
@@ -99,9 +95,7 @@ const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
         const user = await UserService.deleteUser(userId);
-        return user
-            ? res.status(200).json(user)
-            : res.status(404).json({ message: 'not found' });
+        return user ? res.status(200).json(user) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }
@@ -116,9 +110,7 @@ const readFavorites = async (req: Request, res: Response, next: NextFunction) =>
 
     try {
         const user = await UserService.getFavoriteRoutes(userId);
-        return user
-            ? res.status(200).json(user.favoriteRoutes)
-            : res.status(404).json({ message: 'not found' });
+        return user ? res.status(200).json(user.favoriteRoutes) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }
@@ -134,9 +126,7 @@ const addFavorite = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
         const user = await UserService.addFavoriteRoute(userId, routeId);
-        return user
-            ? res.status(200).json(user.favoriteRoutes)
-            : res.status(404).json({ message: 'not found' });
+        return user ? res.status(200).json(user.favoriteRoutes) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }
@@ -152,9 +142,7 @@ const removeFavorite = async (req: Request, res: Response, next: NextFunction) =
 
     try {
         const user = await UserService.removeFavoriteRoute(userId, routeId);
-        return user
-            ? res.status(200).json(user.favoriteRoutes)
-            : res.status(404).json({ message: 'not found' });
+        return user ? res.status(200).json(user.favoriteRoutes) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }
@@ -170,9 +158,7 @@ const toggleFavorite = async (req: Request, res: Response, next: NextFunction) =
 
     try {
         const user = await UserService.toggleFavoriteRoute(userId, routeId);
-        return user
-            ? res.status(200).json(user.favoriteRoutes)
-            : res.status(404).json({ message: 'not found' });
+        return user ? res.status(200).json(user.favoriteRoutes) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }

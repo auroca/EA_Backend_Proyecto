@@ -19,15 +19,15 @@ const createChat = async (req: AuthRequest, res: Response, next: NextFunction) =
         };
 
         const savedChat = await ChatService.createChat(payload);
-        
+
         // Broadcast updated participants to chat room
         if (savedChat.participants && Array.isArray(savedChat.participants)) {
             await broadcastChatParticipants(String(savedChat._id));
         }
-        
+
         // Notify other connected users (except the creator) to reload their chat list
         broadcastChatReload(req.user.id);
-        
+
         return res.status(201).json(savedChat);
     } catch (error: any) {
         // Handle duplicate chat name error

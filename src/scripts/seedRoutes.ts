@@ -106,7 +106,7 @@ const SEED_ROUTES: SeedRoute[] = [
     {
         _id: '66f000000000000000000008',
         name: 'Monuments of Seville',
-        description: 'Monuments of Seville. An ideal itinerary to explore historic landmarks, impressive architecture, and the city\'s rich heritage.',
+        description: "Monuments of Seville. An ideal itinerary to explore historic landmarks, impressive architecture, and the city's rich heritage.",
         userId: '65f0000000000000000000a0',
         difficulty: 'medium',
         city: 'Sevilla',
@@ -190,7 +190,7 @@ const SEED_ROUTES: SeedRoute[] = [
     {
         _id: '66f00000000000000000000f',
         name: 'The charms of Pedralbes',
-        description: 'The charms of Pedralbes. A route through one of Barcelona\'s most elegant areas, with peaceful surroundings and refined spots to discover.',
+        description: "The charms of Pedralbes. A route through one of Barcelona's most elegant areas, with peaceful surroundings and refined spots to discover.",
         userId: '65f00000000000000000009d',
         difficulty: 'easy',
         city: 'Barcelona',
@@ -221,16 +221,9 @@ function validateSeedRoutes(routes: SeedRoute[]) {
 }
 
 function isCompleteRoute(route: SeedRoute): boolean {
-    const hasRequiredStrings =
-        !!route.name &&
-        !!route.description &&
-        !!route.city &&
-        !!route.country &&
-        !!route.userId;
+    const hasRequiredStrings = !!route.name && !!route.description && !!route.city && !!route.country && !!route.userId;
 
-    const hasRequiredNumbers =
-        typeof route.distance === 'number' &&
-        typeof route.duration === 'number';
+    const hasRequiredNumbers = typeof route.distance === 'number' && typeof route.duration === 'number';
 
     return hasRequiredStrings && hasRequiredNumbers;
 }
