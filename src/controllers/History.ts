@@ -31,9 +31,7 @@ const readHistory = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
         const history = await HistoryService.getHistory(historyId);
-        return history
-            ? res.status(200).json(history)
-            : res.status(404).json({ message: 'not found' });
+        return history ? res.status(200).json(history) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }
@@ -44,9 +42,7 @@ const updateHistory = async (req: Request, res: Response, next: NextFunction) =>
 
     try {
         const history = await HistoryService.updateHistory(historyId, req.body);
-        return history
-            ? res.status(200).json(history)
-            : res.status(404).json({ message: 'not found' });
+        return history ? res.status(200).json(history) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }
@@ -57,9 +53,7 @@ const deleteHistory = async (req: Request, res: Response, next: NextFunction) =>
 
     try {
         const history = await HistoryService.deleteHistory(historyId);
-        return history
-            ? res.status(200).json(history)
-            : res.status(404).json({ message: 'not found' });
+        return history ? res.status(200).json(history) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }

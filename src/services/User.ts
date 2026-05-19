@@ -34,12 +34,7 @@ const createUser = async (data: Partial<IUser>): Promise<IUserModel> => {
 
     const savedUser = await user.save();
 
-    await HistoryService.recordHistory(
-        'USER',
-        'CREATE',
-        String(savedUser._id),
-        HistoryService.buildCreateChanges(savedUser.toObject() as Record<string, unknown>, USER_FIELDS)
-    );
+    await HistoryService.recordHistory('USER', 'CREATE', String(savedUser._id), HistoryService.buildCreateChanges(savedUser.toObject() as Record<string, unknown>, USER_FIELDS));
 
     return savedUser;
 };
@@ -93,9 +88,7 @@ const updateUser = async (userId: string, data: Partial<IUser>): Promise<IUserMo
         ...normalizedData
     } as Record<string, unknown>;
 
-    const changedFields = HistoryService.buildModifyChanges(before, afterPreview, USER_FIELDS).map(
-        (change) => change.fieldName
-    );
+    const changedFields = HistoryService.buildModifyChanges(before, afterPreview, USER_FIELDS).map((change) => change.fieldName);
 
     if (changedFields.length === 0) {
         return user;
@@ -137,12 +130,7 @@ const deleteUser = async (userId: string): Promise<IUserModel | null> => {
         return null;
     }
 
-    await HistoryService.recordHistory(
-        'USER',
-        'DELETE',
-        String(deletedUser._id),
-        HistoryService.buildDeleteChanges(before, USER_FIELDS)
-    );
+    await HistoryService.recordHistory('USER', 'DELETE', String(deletedUser._id), HistoryService.buildDeleteChanges(before, USER_FIELDS));
 
     return deletedUser;
 };

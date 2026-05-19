@@ -20,12 +20,7 @@ const createPoint = async (input: IPoint) => {
     const point = new PointModel(input);
     const savedPoint = await point.save();
 
-    await HistoryService.recordHistory(
-        'POINT',
-        'CREATE',
-        String(savedPoint._id),
-        HistoryService.buildCreateChanges(savedPoint.toObject() as Record<string, unknown>, POINT_FIELDS)
-    );
+    await HistoryService.recordHistory('POINT', 'CREATE', String(savedPoint._id), HistoryService.buildCreateChanges(savedPoint.toObject() as Record<string, unknown>, POINT_FIELDS));
 
     return savedPoint;
 };
@@ -74,9 +69,7 @@ const updatePoint = async (pointId: string, input: Partial<IPoint>) => {
         ...input
     } as Record<string, unknown>;
 
-    const changedFields = HistoryService.buildModifyChanges(before, afterPreview, POINT_FIELDS).map(
-        (change) => change.fieldName
-    );
+    const changedFields = HistoryService.buildModifyChanges(before, afterPreview, POINT_FIELDS).map((change) => change.fieldName);
 
     if (changedFields.length === 0) {
         return point;
@@ -85,12 +78,7 @@ const updatePoint = async (pointId: string, input: Partial<IPoint>) => {
     point.set(input);
     const savedPoint = await point.save();
 
-    await HistoryService.recordHistory(
-        'POINT',
-        'MODIFY',
-        String(savedPoint._id),
-        HistoryService.buildModifyChanges(before, savedPoint.toObject() as Record<string, unknown>, changedFields)
-    );
+    await HistoryService.recordHistory('POINT', 'MODIFY', String(savedPoint._id), HistoryService.buildModifyChanges(before, savedPoint.toObject() as Record<string, unknown>, changedFields));
 
     return savedPoint;
 };
@@ -109,12 +97,7 @@ const deletePoint = async (pointId: string) => {
         return null;
     }
 
-    await HistoryService.recordHistory(
-        'POINT',
-        'DELETE',
-        String(deletedPoint._id),
-        HistoryService.buildDeleteChanges(before, POINT_FIELDS)
-    );
+    await HistoryService.recordHistory('POINT', 'DELETE', String(deletedPoint._id), HistoryService.buildDeleteChanges(before, POINT_FIELDS));
 
     return deletedPoint;
 };

@@ -25,12 +25,7 @@ const normalizeValue = (value: unknown): unknown => {
     }
 
     if (value && typeof value === 'object') {
-        return Object.fromEntries(
-            Object.entries(value as Record<string, unknown>).map(([key, entryValue]) => [
-                key,
-                normalizeValue(entryValue)
-            ])
-        );
+        return Object.fromEntries(Object.entries(value as Record<string, unknown>).map(([key, entryValue]) => [key, normalizeValue(entryValue)]));
     }
 
     return value;
@@ -48,11 +43,7 @@ const buildCreateChanges = (source: Record<string, unknown>, fields: string[]): 
     }));
 };
 
-const buildModifyChanges = (
-    before: Record<string, unknown>,
-    after: Record<string, unknown>,
-    fields: string[]
-) => {
+const buildModifyChanges = (before: Record<string, unknown>, after: Record<string, unknown>, fields: string[]) => {
     return fields
         .filter((fieldName) => !valuesEqual(before[fieldName], after[fieldName]))
         .map((fieldName) => ({
@@ -70,12 +61,7 @@ const buildDeleteChanges = (source: Record<string, unknown>, fields: string[]): 
     }));
 };
 
-const recordHistory = async (
-    entity: HistoryEntity,
-    action: HistoryAction,
-    objectId: string,
-    changes: HistoryChange[]
-) => {
+const recordHistory = async (entity: HistoryEntity, action: HistoryAction, objectId: string, changes: HistoryChange[]) => {
     if (!mongoose.Types.ObjectId.isValid(objectId)) {
         throw new Error('Invalid objectId');
     }
@@ -167,10 +153,7 @@ const getAllHistory = async (pagination?: PaginationParams): Promise<ListResult<
     const { limit, page } = pagination;
     const skip = (page - 1) * limit;
 
-    const [data, total] = await Promise.all([
-        HistoryModel.find().sort({ _id: -1 }).skip(skip).limit(limit).populate('changes').exec(),
-        HistoryModel.countDocuments()
-    ]);
+    const [data, total] = await Promise.all([HistoryModel.find().sort({ _id: -1 }).skip(skip).limit(limit).populate('changes').exec(), HistoryModel.countDocuments()]);
 
     return {
         data,

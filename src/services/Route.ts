@@ -96,12 +96,7 @@ const createRoute = async (input: RouteCreateInput) => {
     const route = new RouteModel(routeInput);
     const savedRoute = await route.save();
 
-    await HistoryService.recordHistory(
-        'ROUTE',
-        'CREATE',
-        String(savedRoute._id),
-        HistoryService.buildCreateChanges(savedRoute.toObject() as Record<string, unknown>, ROUTE_FIELDS)
-    );
+    await HistoryService.recordHistory('ROUTE', 'CREATE', String(savedRoute._id), HistoryService.buildCreateChanges(savedRoute.toObject() as Record<string, unknown>, ROUTE_FIELDS));
 
     if (Array.isArray(points) && points.length > 0) {
         const pointDocuments = points.map((point, index) => ({
@@ -117,12 +112,7 @@ const createRoute = async (input: RouteCreateInput) => {
         const savedPoints = await PointModel.insertMany(pointDocuments);
 
         for (const savedPoint of savedPoints) {
-            await HistoryService.recordHistory(
-                'POINT',
-                'CREATE',
-                String(savedPoint._id),
-                HistoryService.buildCreateChanges(savedPoint.toObject() as Record<string, unknown>, POINT_FIELDS)
-            );
+            await HistoryService.recordHistory('POINT', 'CREATE', String(savedPoint._id), HistoryService.buildCreateChanges(savedPoint.toObject() as Record<string, unknown>, POINT_FIELDS));
         }
     }
 
@@ -135,10 +125,7 @@ const getRoute = async (routeId: string) => {
     return formatRouteResponse(route);
 };
 
-const getAllRoutes = async (
-    pagination?: PaginationParams,
-    filter?: any
-): Promise<ListResult<RouteResponse | null>> => {
+const getAllRoutes = async (pagination?: PaginationParams, filter?: any): Promise<ListResult<RouteResponse | null>> => {
     const effectiveFilter = filter && Object.keys(filter).length ? filter : {};
 
     if (!pagination) {
@@ -175,9 +162,7 @@ const updateRoute = async (routeId: string, input: Partial<IRoute>) => {
         ...input
     } as Record<string, unknown>;
 
-    const changedFields = HistoryService.buildModifyChanges(before, afterPreview, ROUTE_FIELDS).map(
-        (change) => change.fieldName
-    );
+    const changedFields = HistoryService.buildModifyChanges(before, afterPreview, ROUTE_FIELDS).map((change) => change.fieldName);
 
     if (changedFields.length === 0) {
         const currentRoute = await populateRoutePoints(RouteModel.findById(routeId)).exec();
@@ -187,12 +172,7 @@ const updateRoute = async (routeId: string, input: Partial<IRoute>) => {
     route.set(input);
     const savedRoute = await route.save();
 
-    await HistoryService.recordHistory(
-        'ROUTE',
-        'MODIFY',
-        String(savedRoute._id),
-        HistoryService.buildModifyChanges(before, savedRoute.toObject() as Record<string, unknown>, changedFields)
-    );
+    await HistoryService.recordHistory('ROUTE', 'MODIFY', String(savedRoute._id), HistoryService.buildModifyChanges(before, savedRoute.toObject() as Record<string, unknown>, changedFields));
 
     const routeWithPoints = await populateRoutePoints(RouteModel.findById(routeId)).exec();
     return formatRouteResponse(routeWithPoints);
@@ -213,12 +193,7 @@ const deleteRoute = async (routeId: string) => {
         return null;
     }
 
-    await HistoryService.recordHistory(
-        'ROUTE',
-        'DELETE',
-        String(deletedRoute._id),
-        HistoryService.buildDeleteChanges(before, ROUTE_FIELDS)
-    );
+    await HistoryService.recordHistory('ROUTE', 'DELETE', String(deletedRoute._id), HistoryService.buildDeleteChanges(before, ROUTE_FIELDS));
 
     return deletedRoute;
 };

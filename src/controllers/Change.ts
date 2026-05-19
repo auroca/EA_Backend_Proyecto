@@ -29,9 +29,7 @@ const readChange = async (req: Request, res: Response, next: NextFunction) => {
 
     try {
         const change = await ChangeService.getChange(changeId);
-        return change
-            ? res.status(200).json(change)
-            : res.status(404).json({ message: 'not found' });
+        return change ? res.status(200).json(change) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }
@@ -42,9 +40,7 @@ const updateChange = async (req: Request, res: Response, next: NextFunction) => 
 
     try {
         const change = await ChangeService.updateChange(changeId, req.body);
-        return change
-            ? res.status(200).json(change)
-            : res.status(404).json({ message: 'not found' });
+        return change ? res.status(200).json(change) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }
@@ -55,9 +51,7 @@ const deleteChange = async (req: Request, res: Response, next: NextFunction) => 
 
     try {
         const change = await ChangeService.deleteChange(changeId);
-        return change
-            ? res.status(200).json(change)
-            : res.status(404).json({ message: 'not found' });
+        return change ? res.status(200).json(change) : res.status(404).json({ message: 'not found' });
     } catch (error) {
         return res.status(500).json({ error });
     }
