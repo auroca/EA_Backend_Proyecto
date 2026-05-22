@@ -12,7 +12,7 @@ export const ValidateJoi = (schema: ObjectSchema) => {
             await schema.validateAsync(req.body);
             next();
         } catch (error) {
-            Logging.error(error);
+            Logging.error('Joi body validation error', error);
             return res.status(422).json({ error });
         }
     };
@@ -24,7 +24,7 @@ export const ValidateQuery = (schema: ObjectSchema) => {
             await schema.validateAsync(req.query);
             next();
         } catch (error) {
-            Logging.error(error);
+            Logging.error('Joi query validation error', error);
             return res.status(422).json({ error });
         }
     };

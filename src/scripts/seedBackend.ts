@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import path from 'path';
+import Logging from '../library/Logging';
 
 function runSeedScript(scriptFileName: string): Promise<void> {
     return new Promise((resolve, reject) => {
@@ -30,7 +31,7 @@ async function seedBackend() {
         await runSeedScript('seedPoints.js');
         process.exit(0);
     } catch (error) {
-        console.error(`Error while running seedBackend: ${String(error)}`);
+        Logging.error(`Error while running seedBackend: ${String(error)}`);
         process.exit(1);
     }
 }

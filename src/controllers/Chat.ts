@@ -5,6 +5,7 @@ import { parsePagination } from '../library/Pagination';
 import Filters, { FieldSpec } from '../library/Filters';
 import { AuthRequest } from '../middleware/auth';
 import { broadcastChatParticipants, joinUserToChatRoom, broadcastChatReload } from '../library/Socket';
+import Logging from '../library/Logging';
 
 const createChat = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
@@ -170,11 +171,12 @@ const joinChat = async (req: AuthRequest, res: Response, next: NextFunction) => 
             await broadcastChatParticipants(chatId);
         } catch (socketError) {
             // If socket fails, still return the joined chat data (socket is optional)
-            console.error('Socket error on chat join:', socketError);
+            Logging.error('Socket error on chat join:', socketError);
         }
 
         return res.status(200).json(joinedChat);
     } catch (error) {
+        Logging.error('Error occurred while joining chat:', error);
         return res.status(500).json({ error });
     }
 };
