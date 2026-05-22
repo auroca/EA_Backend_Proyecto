@@ -18,7 +18,8 @@ export default defineConfig([
         rules: {
             '@typescript-eslint/no-unused-vars': 'warn',
             '@typescript-eslint/no-explicit-any': 'off',
-            '@typescript-eslint/no-non-null-asserted-optional-chain': 'off'
+            '@typescript-eslint/no-non-null-asserted-optional-chain': 'off',
+            'no-console': 'error'
         }
     }
 ]);
