@@ -14,7 +14,7 @@ const createPoint = async (input: IPoint): Promise<ServiceResult<IPoint>> => {
 
         return { success: true, data: savedPoint };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -28,7 +28,7 @@ const getPoint = async (pointId: string): Promise<ServiceResult<IPoint>> => {
 
         return { success: true, data: point };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -59,7 +59,7 @@ const getAllPoints = async (pagination?: PaginationParams, filter?: Record<strin
             }
         };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -68,7 +68,7 @@ const getPointsByRoute = async (routeId: string): Promise<ServiceResult<IPoint[]
         const points = await PointModel.find({ routeId }).sort({ index: 1 }).exec();
         return { success: true, data: points };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -99,7 +99,7 @@ const updatePoint = async (pointId: string, input: Partial<IPoint>): Promise<Ser
 
         return { success: true, data: savedPoint };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -122,7 +122,7 @@ const deletePoint = async (pointId: string): Promise<ServiceResult<IPoint>> => {
 
         return { success: true, data: deletedPoint };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 

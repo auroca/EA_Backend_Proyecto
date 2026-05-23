@@ -101,7 +101,7 @@ const getHistory = async (historyId: string): Promise<ServiceResult<IHistoryMode
 
         return { success: true, data: history };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -120,7 +120,7 @@ const createHistory = async (data: Partial<{ action: HistoryAction; entity: Hist
         const savedHistory = await history.save();
         return { success: true, data: savedHistory };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -137,7 +137,7 @@ const updateHistory = async (historyId: string, data: Partial<{ action: HistoryA
 
         return { success: true, data: savedHistory };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -158,7 +158,7 @@ const deleteHistory = async (historyId: string): Promise<ServiceResult<IHistoryM
 
         return { success: true, data: deletedHistory };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -200,7 +200,7 @@ const getAllHistory = async (pagination?: PaginationParams): Promise<ServiceResu
             }
         };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 

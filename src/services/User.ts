@@ -34,7 +34,7 @@ const createUser = async (data: Partial<IUser>): Promise<ServiceResult<IUserMode
             return { success: false, error: 'Username or email already exists', statusCode: 409 };
         }
 
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -48,7 +48,7 @@ const getUser = async (userId: string): Promise<ServiceResult<IUserModel>> => {
 
         return { success: true, data: user };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -82,7 +82,7 @@ const getAllUsers = async (pagination?: PaginationParams, filter?: Record<string
             }
         };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -129,7 +129,7 @@ const updateUser = async (userId: string, data: Partial<IUser>): Promise<Service
             return { success: false, error: 'Username or email already exists', statusCode: 409 };
         }
 
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -160,7 +160,7 @@ const deleteUser = async (userId: string): Promise<ServiceResult<IUserModel>> =>
 
         return { success: true, data: deletedUser };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -174,7 +174,7 @@ const getFavoriteRoutes = async (userId: string): Promise<ServiceResult<IUserMod
 
         return { success: true, data: user };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -191,7 +191,7 @@ const addFavoriteRoute = async (userId: string, routeId: string): Promise<Servic
 
         return { success: true, data: user };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -208,7 +208,7 @@ const removeFavoriteRoute = async (userId: string, routeId: string): Promise<Ser
 
         return { success: true, data: user };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -237,7 +237,7 @@ const toggleFavoriteRoute = async (userId: string, routeId: string): Promise<Ser
 
         return { success: true, data: updatedUser };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 

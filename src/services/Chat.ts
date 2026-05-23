@@ -37,7 +37,7 @@ const createChat = async (data: Partial<IChat>): Promise<ServiceResult<IChatMode
         const savedChat = await chat.save();
         return { success: true, data: savedChat };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -51,7 +51,7 @@ const getChat = async (chatId: string): Promise<ServiceResult<IChatModel>> => {
 
         return { success: true, data: chat };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -70,7 +70,7 @@ const getAllChats = async (pagination?: PaginationParams, filter?: Record<string
         const chats = await Chat.find(effectiveFilter).sort({ _id: 1 }).skip(skip).limit(limit).populate('participants', 'username name').populate('chatHistory.userId', 'username name').exec();
         return { success: true, data: chats };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -97,7 +97,7 @@ const getAllChatsSummary = async (pagination?: PaginationParams, filter?: Record
             }))
         };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -111,7 +111,7 @@ const updateChat = async (chatId: string, data: Partial<IChat>): Promise<Service
 
         return { success: true, data: chat };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -125,7 +125,7 @@ const deleteChat = async (chatId: string): Promise<ServiceResult<IChatModel>> =>
 
         return { success: true, data: chat };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -154,7 +154,7 @@ const addMessage = async (chatId: string, userId: string, message: string): Prom
 
         return { success: true, data: chat };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -187,7 +187,7 @@ const joinChat = async (chatId: string, userId: string, password: string): Promi
 
         return await getChat(chatId);
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 

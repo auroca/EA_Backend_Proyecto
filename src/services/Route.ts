@@ -117,7 +117,7 @@ const createRoute = async (input: RouteCreateInput): Promise<ServiceResult<Route
 
         return { success: true, data: formattedRoute };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -132,7 +132,7 @@ const getRoute = async (routeId: string): Promise<ServiceResult<RouteResponse>> 
 
         return { success: true, data: formattedRoute };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -163,7 +163,7 @@ const getAllRoutes = async (pagination?: PaginationParams, filter?: Record<strin
             }
         };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -199,7 +199,7 @@ const updateRoute = async (routeId: string, input: Partial<IRoute>): Promise<Ser
 
         return { success: true, data: formattedRoute };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -223,7 +223,7 @@ const deleteRoute = async (routeId: string): Promise<ServiceResult<IRoute>> => {
 
         return { success: true, data: deletedRoute };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 

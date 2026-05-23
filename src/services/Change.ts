@@ -18,7 +18,7 @@ const getAllChanges = async (): Promise<ServiceResult<IChangeModel[]>> => {
         const changes = await ChangeModel.find().sort({ _id: -1 }).populate('historyId').exec();
         return { success: true, data: changes };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -32,7 +32,7 @@ const getChange = async (changeId: string): Promise<ServiceResult<IChangeModel>>
 
         return { success: true, data: change };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -66,7 +66,7 @@ const createChange = async (data: Partial<IChange>): Promise<ServiceResult<IChan
 
         return { success: true, data: savedChange };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -133,7 +133,7 @@ const updateChange = async (changeId: string, data: Partial<IChange>): Promise<S
         const savedChange = await change.save();
         return { success: true, data: savedChange };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
@@ -160,7 +160,7 @@ const deleteChange = async (changeId: string): Promise<ServiceResult<IChangeMode
 
         return { success: true, data: deletedChange };
     } catch {
-        return { success: false, error: 'Internal data server error', statusCode: 500 };
+        return { success: false, error: 'Internal data server error' };
     }
 };
 
