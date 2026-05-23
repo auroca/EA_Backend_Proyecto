@@ -3,6 +3,7 @@ import { config } from '../config/config';
 import * as authService from '../services/auth';
 import { AuthRequest } from '../middleware/auth';
 import User from '../models/User';
+import { sendServiceError } from '../utils/controllerResponses';
 
 export const login = async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
@@ -11,7 +12,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         const user = await authService.validateUserCredentials(email, password);
 
         if (!user) {
-            return res.status(401).json({ message: 'Credenciales incorrectas' });
+            return res.status(401).json({ message: 'Invalid credentials' });
         }
 
         const { accessToken, refreshToken, socket } = authService.getLoginPayload(user);
@@ -22,7 +23,7 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
         });
 
         return res.status(200).json({
-            message: 'Login exitoso',
+            message: 'Login successful',
             accessToken,
             socket,
             user: {
@@ -35,8 +36,8 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
                 role: user.role
             }
         });
-    } catch (error) {
-        return res.status(500).json({ error });
+    } catch {
+        return sendServiceError(res, 'Unexpected server error');
     }
 };
 
@@ -45,7 +46,7 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
         const incomingRefreshToken = req.cookies?.[config.cookies.refreshName] || req.body?.refreshToken;
 
         if (!incomingRefreshToken) {
-            return res.status(401).json({ message: 'Refresh token requerido' });
+            return res.status(401).json({ message: 'Refresh token required' });
         }
 
         const { accessToken, refreshToken: newRefreshToken } = await authService.refreshUserSession(incomingRefreshToken);
@@ -56,11 +57,11 @@ export const refreshToken = async (req: Request, res: Response, next: NextFuncti
         });
 
         return res.status(200).json({
-            message: 'Token refrescado',
+            message: 'Token refreshed',
             accessToken
         });
-    } catch (error) {
-        return res.status(401).json({ message: 'Refresh token expirado o inv├ílido' });
+    } catch {
+        return res.status(401).json({ message: 'Refresh token expired or invalid' });
     }
 };
 
@@ -70,9 +71,9 @@ export const logout = async (req: Request, res: Response, next: NextFunction) =>
             ...config.cookies.options
         });
 
-        return res.status(200).json({ message: 'Logout exitoso' });
-    } catch (error) {
-        return res.status(500).json({ error });
+        return res.status(200).json({ message: 'Logout successful' });
+    } catch {
+        return sendServiceError(res, 'Unexpected server error');
     }
 };
 
@@ -81,11 +82,11 @@ export const getMe = async (req: AuthRequest, res: Response) => {
         const user = await User.findById(req.user?.id).populate('routes').exec();
 
         if (!user) {
-            return res.status(404).json({ message: 'Usuario no encontrado' });
+            return res.status(404).json({ message: 'User not found' });
         }
 
         return res.status(200).json(user);
-    } catch (error) {
-        return res.status(500).json({ error });
+    } catch {
+        return sendServiceError(res, 'Unexpected server error');
     }
 };

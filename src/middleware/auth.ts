@@ -5,6 +5,7 @@ import { IJwtPayload, UserRole } from '../models/JwtPayload';
 import RouteModel from '../models/Route';
 import PointModel from '../models/Point';
 import ChatModel from '../models/Chat';
+import { sendServiceError } from '../utils/controllerResponses';
 
 export interface AuthRequest extends Request {
     user?: IJwtPayload;
@@ -15,7 +16,7 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
     const token = authHeader && authHeader.split(' ')[1];
 
     if (!token) {
-        return res.status(401).json({ message: 'Token requerido' });
+        return res.status(401).json({ message: 'Token required' });
     }
 
     try {
@@ -24,21 +25,21 @@ export const authenticateToken = (req: AuthRequest, res: Response, next: NextFun
         next();
     } catch (err: any) {
         if (err instanceof jwt.TokenExpiredError) {
-            return res.status(401).json({ message: 'Access token expirado' });
+            return res.status(401).json({ message: 'Access token expired' });
         }
 
-        return res.status(401).json({ message: 'Token inválido' });
+        return res.status(401).json({ message: 'Invalid token' });
     }
 };
 
 export const authorizeRoles = (...roles: UserRole[]) => {
     return (req: AuthRequest, res: Response, next: NextFunction) => {
         if (!req.user) {
-            return res.status(401).json({ message: 'Usuario no autenticado' });
+            return res.status(401).json({ message: 'User not authenticated' });
         }
 
         if (!roles.includes(req.user.rol)) {
-            return res.status(403).json({ message: 'No tienes permisos para acceder a este recurso' });
+            return res.status(403).json({ message: 'You do not have permission to access this resource' });
         }
 
         next();
@@ -49,20 +50,20 @@ export const authorizeSelfOrAdmin = (req: AuthRequest, res: Response, next: Next
     const userId = req.params.userId ?? req.params.UserId;
 
     if (!req.user) {
-        return res.status(401).json({ message: 'Usuario no autenticado' });
+        return res.status(401).json({ message: 'User not authenticated' });
     }
 
     if (req.user.rol === 'admin' || req.user.id === userId) {
         return next();
     }
 
-    return res.status(403).json({ message: 'No tienes permisos para acceder a este recurso' });
+    return res.status(403).json({ message: 'You do not have permission to access this resource' });
 };
 
 export const authorizeRouteOwnerOrAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         if (!req.user) {
-            return res.status(401).json({ message: 'Usuario no autenticado' });
+            return res.status(401).json({ message: 'User not authenticated' });
         }
 
         if (req.user.rol === 'admin') {
@@ -82,19 +83,19 @@ export const authorizeRouteOwnerOrAdmin = async (req: AuthRequest, res: Response
         }
 
         if (route.userId.toString() !== req.user.id) {
-            return res.status(403).json({ message: 'No tienes permisos para modificar esta ruta' });
+            return res.status(403).json({ message: 'You do not have permission to modify this route' });
         }
 
         return next();
-    } catch (error) {
-        return res.status(500).json({ error });
+    } catch {
+        return sendServiceError(res, 'Unexpected server error');
     }
 };
 
 export const authorizePointRouteOwnerOrAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         if (!req.user) {
-            return res.status(401).json({ message: 'Usuario no autenticado' });
+            return res.status(401).json({ message: 'User not authenticated' });
         }
 
         if (req.user.rol === 'admin') {
@@ -114,19 +115,19 @@ export const authorizePointRouteOwnerOrAdmin = async (req: AuthRequest, res: Res
         }
 
         if (route.userId.toString() !== req.user.id) {
-            return res.status(403).json({ message: 'No tienes permisos para añadir puntos a esta ruta' });
+            return res.status(403).json({ message: 'You do not have permission to add points to this route' });
         }
 
         return next();
-    } catch (error) {
-        return res.status(500).json({ error });
+    } catch {
+        return sendServiceError(res, 'Unexpected server error');
     }
 };
 
 export const authorizePointOwnerOrAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         if (!req.user) {
-            return res.status(401).json({ message: 'Usuario no autenticado' });
+            return res.status(401).json({ message: 'User not authenticated' });
         }
 
         if (req.user.rol === 'admin') {
@@ -148,19 +149,19 @@ export const authorizePointOwnerOrAdmin = async (req: AuthRequest, res: Response
         }
 
         if (route.userId.toString() !== req.user.id) {
-            return res.status(403).json({ message: 'No tienes permisos para modificar este punto' });
+            return res.status(403).json({ message: 'You do not have permission to modify this point' });
         }
 
         return next();
-    } catch (error) {
-        return res.status(500).json({ error });
+    } catch {
+        return sendServiceError(res, 'Unexpected server error');
     }
 };
 
 export const authorizeChatParticipantOrAdmin = async (req: AuthRequest, res: Response, next: NextFunction) => {
     try {
         if (!req.user) {
-            return res.status(401).json({ message: 'Usuario no autenticado' });
+            return res.status(401).json({ message: 'User not authenticated' });
         }
 
         if (req.user.rol === 'admin') {
@@ -182,11 +183,11 @@ export const authorizeChatParticipantOrAdmin = async (req: AuthRequest, res: Res
         const isParticipant = chat.participants.some((participantId) => participantId.toString() === req.user!.id);
 
         if (!isParticipant) {
-            return res.status(403).json({ message: 'No tienes permisos para acceder a este chat' });
+            return res.status(403).json({ message: 'You do not have permission to access this chat' });
         }
 
         return next();
-    } catch (error) {
-        return res.status(500).json({ error });
+    } catch {
+        return sendServiceError(res, 'Unexpected server error');
     }
 };
