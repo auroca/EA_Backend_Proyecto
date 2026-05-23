@@ -1,7 +1,8 @@
 import mongoose from 'mongoose';
 import ChangeModel from '../models/Change';
-import HistoryModel, { HistoryAction, HistoryEntity } from '../models/History';
+import HistoryModel, { HistoryAction, HistoryEntity, IHistoryModel } from '../models/History';
 import { PaginationParams } from '../library/Pagination';
+import { ListResult, ServiceResult } from '../types/ServiceResult';
 
 export type HistoryChange = {
     fieldName: string;
@@ -90,47 +91,76 @@ const recordHistory = async (entity: HistoryEntity, action: HistoryAction, objec
     return history;
 };
 
-const getHistory = async (historyId: string) => {
-    return await HistoryModel.findById(historyId).populate('changes').exec();
-};
+const getHistory = async (historyId: string): Promise<ServiceResult<IHistoryModel>> => {
+    try {
+        const history = await HistoryModel.findById(historyId).populate('changes').exec();
 
-const createHistory = async (data: Partial<{ action: HistoryAction; entity: HistoryEntity }>) => {
-    const history = new HistoryModel({
-        action: data.action,
-        entity: data.entity,
-        changes: []
-    });
+        if (!history) {
+            return { success: false, error: `No history found with ID: ${historyId}`, statusCode: 404 };
+        }
 
-    return await history.save();
-};
-
-const updateHistory = async (historyId: string, data: Partial<{ action: HistoryAction; entity: HistoryEntity }>) => {
-    const history = await HistoryModel.findById(historyId).exec();
-
-    if (!history) {
-        return null;
+        return { success: true, data: history };
+    } catch {
+        return { success: false, error: 'Internal data server error' };
     }
-
-    history.set(data);
-    return await history.save();
 };
 
-const deleteHistory = async (historyId: string) => {
-    await ChangeModel.deleteMany({ historyId }).exec();
-    return await HistoryModel.findByIdAndDelete(historyId).exec();
+const createHistory = async (data: Partial<{ action: HistoryAction; entity: HistoryEntity }>): Promise<ServiceResult<IHistoryModel>> => {
+    try {
+        if (!data.action || !data.entity) {
+            return { success: false, error: 'Invalid history data', statusCode: 400 };
+        }
+
+        const history = new HistoryModel({
+            action: data.action,
+            entity: data.entity,
+            changes: []
+        });
+
+        const savedHistory = await history.save();
+        return { success: true, data: savedHistory };
+    } catch {
+        return { success: false, error: 'Internal data server error' };
+    }
 };
 
-type PaginatedResult<T> = {
-    data: T[];
-    pagination: {
-        page: number;
-        limit: number;
-        total: number;
-        totalPages: number;
-    };
+const updateHistory = async (historyId: string, data: Partial<{ action: HistoryAction; entity: HistoryEntity }>): Promise<ServiceResult<IHistoryModel>> => {
+    try {
+        const history = await HistoryModel.findById(historyId).exec();
+
+        if (!history) {
+            return { success: false, error: `No history found with ID: ${historyId}`, statusCode: 404 };
+        }
+
+        history.set(data);
+        const savedHistory = await history.save();
+
+        return { success: true, data: savedHistory };
+    } catch {
+        return { success: false, error: 'Internal data server error' };
+    }
 };
 
-type ListResult<T> = PaginatedResult<T> | T[];
+const deleteHistory = async (historyId: string): Promise<ServiceResult<IHistoryModel>> => {
+    try {
+        const history = await HistoryModel.findById(historyId).exec();
+
+        if (!history) {
+            return { success: false, error: `No history found with ID: ${historyId}`, statusCode: 404 };
+        }
+
+        await ChangeModel.deleteMany({ historyId }).exec();
+        const deletedHistory = await HistoryModel.findByIdAndDelete(historyId).exec();
+
+        if (!deletedHistory) {
+            return { success: false, error: `No history found with ID: ${historyId}`, statusCode: 404 };
+        }
+
+        return { success: true, data: deletedHistory };
+    } catch {
+        return { success: false, error: 'Internal data server error' };
+    }
+};
 
 interface HistoryServiceApi {
     buildCreateChanges: typeof buildCreateChanges;
@@ -145,25 +175,33 @@ interface HistoryServiceApi {
     valuesEqual: typeof valuesEqual;
 }
 
-const getAllHistory = async (pagination?: PaginationParams): Promise<ListResult<unknown>> => {
-    if (!pagination) {
-        return await HistoryModel.find().sort({ _id: -1 }).populate('changes').exec();
-    }
-
-    const { limit, page } = pagination;
-    const skip = (page - 1) * limit;
-
-    const [data, total] = await Promise.all([HistoryModel.find().sort({ _id: -1 }).skip(skip).limit(limit).populate('changes').exec(), HistoryModel.countDocuments()]);
-
-    return {
-        data,
-        pagination: {
-            page,
-            limit,
-            total,
-            totalPages: Math.ceil(total / limit)
+const getAllHistory = async (pagination?: PaginationParams): Promise<ServiceResult<ListResult<IHistoryModel>>> => {
+    try {
+        if (!pagination) {
+            const history = await HistoryModel.find().sort({ _id: -1 }).populate('changes').exec();
+            return { success: true, data: history };
         }
-    };
+
+        const { limit, page } = pagination;
+        const skip = (page - 1) * limit;
+
+        const [data, total] = await Promise.all([HistoryModel.find().sort({ _id: -1 }).skip(skip).limit(limit).populate('changes').exec(), HistoryModel.countDocuments()]);
+
+        return {
+            success: true,
+            data: {
+                data,
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    totalPages: Math.ceil(total / limit)
+                }
+            }
+        };
+    } catch {
+        return { success: false, error: 'Internal data server error' };
+    }
 };
 
 const HistoryService: HistoryServiceApi = {

@@ -150,7 +150,7 @@ export const initializeSocket = (server: http.Server) => {
         const token = getTokenFromSocket(socket);
 
         if (!token) {
-            return next(new Error('Access token requerido para socket.io'));
+            return next(new Error('Access token required for socket.io'));
         }
 
         try {
@@ -159,7 +159,7 @@ export const initializeSocket = (server: http.Server) => {
 
             return next();
         } catch (error) {
-            return next(new Error('Access token inválido para socket.io'));
+            return next(new Error('Invalid access token for socket.io'));
         }
     });
 
@@ -192,7 +192,7 @@ export const initializeSocket = (server: http.Server) => {
  */
 export const getSocketServer = () => {
     if (!io) {
-        throw new Error('Socket.io server no ha sido inicializado');
+        throw new Error('Socket.io server has not been initialized');
     }
 
     return io;

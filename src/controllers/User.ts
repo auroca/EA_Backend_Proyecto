@@ -2,43 +2,42 @@ import { NextFunction, Request, Response } from 'express';
 import UserService from '../services/User';
 import { parsePagination } from '../library/Pagination';
 import Filters, { FieldSpec } from '../library/Filters';
+import { isValidObjectId, sendServiceError } from '../utils/controllerResponses';
 
 const createUser = async (req: Request, res: Response, next: NextFunction) => {
-    try {
-        const payload = {
-            name: req.body.name,
-            surname: req.body.surname,
-            username: req.body.username,
-            email: req.body.email,
-            password: req.body.password,
-            enabled: true,
-            role: 'user' as const
-        };
+    const payload = {
+        name: req.body.name,
+        surname: req.body.surname,
+        username: req.body.username,
+        email: req.body.email,
+        password: req.body.password,
+        enabled: true,
+        role: 'user' as const
+    };
 
-        const savedUser = await UserService.createUser(payload);
-        return res.status(201).json(savedUser);
-    } catch (error: any) {
-        if (error?.code === 11000) {
-            return res.status(409).json({ message: 'Username or email already exists' });
-        }
+    const result = await UserService.createUser(payload);
 
-        return res.status(500).json({ error });
+    if (result.success) {
+        return res.status(201).json(result.data);
     }
+
+    return sendServiceError(res, result.error, result.statusCode);
 };
 
 const readUser = async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.params.userId ?? req.params.UserId;
 
-    if (!userId) {
-        return res.status(400).json({ message: 'userId is required' });
+    if (!isValidObjectId(userId)) {
+        return res.status(400).json({ status: 'error', message: 'Provided ID has an invalid format' });
     }
 
-    try {
-        const user = await UserService.getUser(userId);
-        return user ? res.status(200).json(user) : res.status(404).json({ message: 'not found' });
-    } catch (error) {
-        return res.status(500).json({ error });
+    const result = await UserService.getUser(userId);
+
+    if (result.success) {
+        return res.status(200).json(result.data);
     }
+
+    return sendServiceError(res, result.error, result.statusCode);
 };
 
 const readAll = async (req: Request, res: Response, next: NextFunction) => {
@@ -60,108 +59,115 @@ const readAll = async (req: Request, res: Response, next: NextFunction) => {
             return res.status(400).json({ errors });
         }
 
-        const users = await UserService.getAllUsers(pagination, filter);
-        return res.status(200).json(users);
-    } catch (error) {
-        return res.status(500).json({ error });
+        const result = await UserService.getAllUsers(pagination, filter);
+
+        if (result.success) {
+            return res.status(200).json(result.data);
+        }
+
+        return sendServiceError(res, result.error, result.statusCode);
+    } catch {
+        return sendServiceError(res, 'Unexpected server error');
     }
 };
 
 const updateUser = async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.params.userId ?? req.params.UserId;
 
-    if (!userId) {
-        return res.status(400).json({ message: 'userId is required' });
+    if (!isValidObjectId(userId)) {
+        return res.status(400).json({ status: 'error', message: 'Provided ID has an invalid format' });
     }
 
-    try {
-        const updatedUser = await UserService.updateUser(userId, req.body);
-        return updatedUser ? res.status(200).json(updatedUser) : res.status(404).json({ message: 'not found' });
-    } catch (error: any) {
-        if (error?.code === 11000) {
-            return res.status(409).json({ message: 'Username or email already exists' });
-        }
+    const result = await UserService.updateUser(userId, req.body);
 
-        return res.status(500).json({ error });
+    if (result.success) {
+        return res.status(200).json(result.data);
     }
+
+    return sendServiceError(res, result.error, result.statusCode);
 };
 
 const deleteUser = async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.params.userId ?? req.params.UserId;
 
-    if (!userId) {
-        return res.status(400).json({ message: 'userId is required' });
+    if (!isValidObjectId(userId)) {
+        return res.status(400).json({ status: 'error', message: 'Provided ID has an invalid format' });
     }
 
-    try {
-        const user = await UserService.deleteUser(userId);
-        return user ? res.status(200).json(user) : res.status(404).json({ message: 'not found' });
-    } catch (error) {
-        return res.status(500).json({ error });
+    const result = await UserService.deleteUser(userId);
+
+    if (result.success) {
+        return res.status(200).json(result.data);
     }
+
+    return sendServiceError(res, result.error, result.statusCode);
 };
 
 const readFavorites = async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.params.userId ?? req.params.UserId;
 
-    if (!userId) {
-        return res.status(400).json({ message: 'userId is required' });
+    if (!isValidObjectId(userId)) {
+        return res.status(400).json({ status: 'error', message: 'Provided ID has an invalid format' });
     }
 
-    try {
-        const user = await UserService.getFavoriteRoutes(userId);
-        return user ? res.status(200).json(user.favoriteRoutes) : res.status(404).json({ message: 'not found' });
-    } catch (error) {
-        return res.status(500).json({ error });
+    const result = await UserService.getFavoriteRoutes(userId);
+
+    if (result.success) {
+        return res.status(200).json(result.data.favoriteRoutes);
     }
+
+    return sendServiceError(res, result.error, result.statusCode);
 };
 
 const addFavorite = async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.params.userId ?? req.params.UserId;
     const routeId = req.params.routeId ?? req.params.RouteId;
 
-    if (!userId || !routeId) {
-        return res.status(400).json({ message: 'userId and routeId are required' });
+    if (!isValidObjectId(userId) || !isValidObjectId(routeId)) {
+        return res.status(400).json({ status: 'error', message: 'Provided IDs have an invalid format' });
     }
 
-    try {
-        const user = await UserService.addFavoriteRoute(userId, routeId);
-        return user ? res.status(200).json(user.favoriteRoutes) : res.status(404).json({ message: 'not found' });
-    } catch (error) {
-        return res.status(500).json({ error });
+    const result = await UserService.addFavoriteRoute(userId, routeId);
+
+    if (result.success) {
+        return res.status(200).json(result.data.favoriteRoutes);
     }
+
+    return sendServiceError(res, result.error, result.statusCode);
 };
 
 const removeFavorite = async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.params.userId ?? req.params.UserId;
     const routeId = req.params.routeId ?? req.params.RouteId;
 
-    if (!userId || !routeId) {
-        return res.status(400).json({ message: 'userId and routeId are required' });
+    if (!isValidObjectId(userId) || !isValidObjectId(routeId)) {
+        return res.status(400).json({ status: 'error', message: 'Provided IDs have an invalid format' });
     }
 
-    try {
-        const user = await UserService.removeFavoriteRoute(userId, routeId);
-        return user ? res.status(200).json(user.favoriteRoutes) : res.status(404).json({ message: 'not found' });
-    } catch (error) {
-        return res.status(500).json({ error });
+    const result = await UserService.removeFavoriteRoute(userId, routeId);
+
+    if (result.success) {
+        return res.status(200).json(result.data.favoriteRoutes);
     }
+
+    return sendServiceError(res, result.error, result.statusCode);
 };
 
 const toggleFavorite = async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.params.userId ?? req.params.UserId;
     const routeId = req.params.routeId ?? req.params.RouteId;
 
-    if (!userId || !routeId) {
-        return res.status(400).json({ message: 'userId and routeId are required' });
+    if (!isValidObjectId(userId) || !isValidObjectId(routeId)) {
+        return res.status(400).json({ status: 'error', message: 'Provided IDs have an invalid format' });
     }
 
-    try {
-        const user = await UserService.toggleFavoriteRoute(userId, routeId);
-        return user ? res.status(200).json(user.favoriteRoutes) : res.status(404).json({ message: 'not found' });
-    } catch (error) {
-        return res.status(500).json({ error });
+    const result = await UserService.toggleFavoriteRoute(userId, routeId);
+
+    if (result.success) {
+        return res.status(200).json(result.data.favoriteRoutes);
     }
+
+    return sendServiceError(res, result.error, result.statusCode);
 };
 
 export default {

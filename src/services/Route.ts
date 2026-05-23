@@ -1,6 +1,7 @@
 import RouteModel, { IRoute } from '../models/Route';
 import PointModel from '../models/Point';
 import HistoryService from './History';
+import { ListResult, ServiceResult } from '../types/ServiceResult';
 
 const ROUTE_FIELDS = ['name', 'description', 'cover_image', 'city', 'country', 'distance', 'duration', 'difficulty', 'tags', 'userId'];
 const POINT_FIELDS = ['name', 'description', 'latitude', 'longitude', 'image', 'routeId', 'index'];
@@ -11,18 +12,6 @@ type PaginationParams = {
     limit: PaginationLimit;
     page: number;
 };
-
-type PaginatedResult<T> = {
-    data: T[];
-    pagination: {
-        page: number;
-        limit: number;
-        total: number;
-        totalPages: number;
-    };
-};
-
-type ListResult<T> = PaginatedResult<T> | T[];
 
 type RoutePointInput = {
     name: string;
@@ -90,112 +79,152 @@ const formatRouteResponse = (route: any): RouteResponse | null => {
     };
 };
 
-const createRoute = async (input: RouteCreateInput) => {
-    const { points, images, ...routeInput } = input as RouteCreateInput & { images?: string[] };
+const isRouteResponse = (route: RouteResponse | null): route is RouteResponse => route !== null;
 
-    const route = new RouteModel(routeInput);
-    const savedRoute = await route.save();
+const createRoute = async (input: RouteCreateInput): Promise<ServiceResult<RouteResponse>> => {
+    try {
+        const { points, images, ...routeInput } = input as RouteCreateInput & { images?: string[] };
 
-    await HistoryService.recordHistory('ROUTE', 'CREATE', String(savedRoute._id), HistoryService.buildCreateChanges(savedRoute.toObject() as Record<string, unknown>, ROUTE_FIELDS));
+        const route = new RouteModel(routeInput);
+        const savedRoute = await route.save();
 
-    if (Array.isArray(points) && points.length > 0) {
-        const pointDocuments = points.map((point, index) => ({
-            name: point.name,
-            description: point.description,
-            latitude: point.latitude,
-            longitude: point.longitude,
-            image: point.image,
-            routeId: savedRoute._id,
-            index: typeof point.index === 'number' ? point.index : index
-        }));
+        await HistoryService.recordHistory('ROUTE', 'CREATE', String(savedRoute._id), HistoryService.buildCreateChanges(savedRoute.toObject() as Record<string, unknown>, ROUTE_FIELDS));
 
-        const savedPoints = await PointModel.insertMany(pointDocuments);
+        if (Array.isArray(points) && points.length > 0) {
+            const pointDocuments = points.map((point, index) => ({
+                name: point.name,
+                description: point.description,
+                latitude: point.latitude,
+                longitude: point.longitude,
+                image: point.image,
+                routeId: savedRoute._id,
+                index: typeof point.index === 'number' ? point.index : index
+            }));
 
-        for (const savedPoint of savedPoints) {
-            await HistoryService.recordHistory('POINT', 'CREATE', String(savedPoint._id), HistoryService.buildCreateChanges(savedPoint.toObject() as Record<string, unknown>, POINT_FIELDS));
+            const savedPoints = await PointModel.insertMany(pointDocuments);
+
+            for (const savedPoint of savedPoints) {
+                await HistoryService.recordHistory('POINT', 'CREATE', String(savedPoint._id), HistoryService.buildCreateChanges(savedPoint.toObject() as Record<string, unknown>, POINT_FIELDS));
+            }
         }
-    }
 
-    const routeWithPoints = await populateRoutePoints(RouteModel.findById(savedRoute._id)).exec();
-    return formatRouteResponse(routeWithPoints);
-};
+        const routeWithPoints = await populateRoutePoints(RouteModel.findById(savedRoute._id)).exec();
+        const formattedRoute = formatRouteResponse(routeWithPoints);
 
-const getRoute = async (routeId: string) => {
-    const route = await populateRoutePoints(RouteModel.findById(routeId)).exec();
-    return formatRouteResponse(route);
-};
-
-const getAllRoutes = async (pagination?: PaginationParams, filter?: any): Promise<ListResult<RouteResponse | null>> => {
-    const effectiveFilter = filter && Object.keys(filter).length ? filter : {};
-
-    if (!pagination) {
-        const routes = await populateRoutePoints(RouteModel.find(effectiveFilter).sort({ _id: 1 })).exec();
-        return routes.map((route: any) => formatRouteResponse(route));
-    }
-
-    const { limit, page } = pagination;
-    const skip = (page - 1) * limit;
-
-    const [data, total] = await Promise.all([populateRoutePoints(RouteModel.find(effectiveFilter).sort({ _id: 1 }).skip(skip).limit(limit)).exec(), RouteModel.countDocuments(effectiveFilter)]);
-
-    return {
-        data: data.map((route: any) => formatRouteResponse(route)),
-        pagination: {
-            page,
-            limit,
-            total,
-            totalPages: Math.ceil(total / limit)
+        if (!formattedRoute) {
+            return { success: false, error: 'Route could not be loaded after creation', statusCode: 500 };
         }
-    };
+
+        return { success: true, data: formattedRoute };
+    } catch {
+        return { success: false, error: 'Internal data server error' };
+    }
 };
 
-const updateRoute = async (routeId: string, input: Partial<IRoute>) => {
-    const route = await RouteModel.findById(routeId).exec();
+const getRoute = async (routeId: string): Promise<ServiceResult<RouteResponse>> => {
+    try {
+        const route = await populateRoutePoints(RouteModel.findById(routeId)).exec();
+        const formattedRoute = formatRouteResponse(route);
 
-    if (!route) {
-        return null;
+        if (!formattedRoute) {
+            return { success: false, error: `No route found with ID: ${routeId}`, statusCode: 404 };
+        }
+
+        return { success: true, data: formattedRoute };
+    } catch {
+        return { success: false, error: 'Internal data server error' };
     }
-
-    const before = route.toObject() as Record<string, unknown>;
-    const afterPreview = {
-        ...before,
-        ...input
-    } as Record<string, unknown>;
-
-    const changedFields = HistoryService.buildModifyChanges(before, afterPreview, ROUTE_FIELDS).map((change) => change.fieldName);
-
-    if (changedFields.length === 0) {
-        const currentRoute = await populateRoutePoints(RouteModel.findById(routeId)).exec();
-        return formatRouteResponse(currentRoute);
-    }
-
-    route.set(input);
-    const savedRoute = await route.save();
-
-    await HistoryService.recordHistory('ROUTE', 'MODIFY', String(savedRoute._id), HistoryService.buildModifyChanges(before, savedRoute.toObject() as Record<string, unknown>, changedFields));
-
-    const routeWithPoints = await populateRoutePoints(RouteModel.findById(routeId)).exec();
-    return formatRouteResponse(routeWithPoints);
 };
 
-const deleteRoute = async (routeId: string) => {
-    const route = await RouteModel.findById(routeId).exec();
+const getAllRoutes = async (pagination?: PaginationParams, filter?: Record<string, unknown>): Promise<ServiceResult<ListResult<RouteResponse>>> => {
+    try {
+        const effectiveFilter = filter && Object.keys(filter).length ? filter : {};
 
-    if (!route) {
-        return null;
+        if (!pagination) {
+            const routes = await populateRoutePoints(RouteModel.find(effectiveFilter).sort({ _id: 1 })).exec();
+            return { success: true, data: routes.map((route: any) => formatRouteResponse(route)).filter(isRouteResponse) };
+        }
+
+        const { limit, page } = pagination;
+        const skip = (page - 1) * limit;
+
+        const [data, total] = await Promise.all([populateRoutePoints(RouteModel.find(effectiveFilter).sort({ _id: 1 }).skip(skip).limit(limit)).exec(), RouteModel.countDocuments(effectiveFilter)]);
+
+        return {
+            success: true,
+            data: {
+                data: data.map((route: any) => formatRouteResponse(route)).filter(isRouteResponse),
+                pagination: {
+                    page,
+                    limit,
+                    total,
+                    totalPages: Math.ceil(total / limit)
+                }
+            }
+        };
+    } catch {
+        return { success: false, error: 'Internal data server error' };
     }
+};
 
-    const before = route.toObject() as Record<string, unknown>;
-    await PointModel.deleteMany({ routeId }).exec();
-    const deletedRoute = await RouteModel.findByIdAndDelete(routeId).exec();
+const updateRoute = async (routeId: string, input: Partial<IRoute>): Promise<ServiceResult<RouteResponse>> => {
+    try {
+        const route = await RouteModel.findById(routeId).exec();
 
-    if (!deletedRoute) {
-        return null;
+        if (!route) {
+            return { success: false, error: `No route found with ID: ${routeId}`, statusCode: 404 };
+        }
+
+        const before = route.toObject() as Record<string, unknown>;
+        const afterPreview = {
+            ...before,
+            ...input
+        } as Record<string, unknown>;
+
+        const changedFields = HistoryService.buildModifyChanges(before, afterPreview, ROUTE_FIELDS).map((change) => change.fieldName);
+
+        if (changedFields.length > 0) {
+            route.set(input);
+            const savedRoute = await route.save();
+
+            await HistoryService.recordHistory('ROUTE', 'MODIFY', String(savedRoute._id), HistoryService.buildModifyChanges(before, savedRoute.toObject() as Record<string, unknown>, changedFields));
+        }
+
+        const routeWithPoints = await populateRoutePoints(RouteModel.findById(routeId)).exec();
+        const formattedRoute = formatRouteResponse(routeWithPoints);
+
+        if (!formattedRoute) {
+            return { success: false, error: `No route found with ID: ${routeId}`, statusCode: 404 };
+        }
+
+        return { success: true, data: formattedRoute };
+    } catch {
+        return { success: false, error: 'Internal data server error' };
     }
+};
 
-    await HistoryService.recordHistory('ROUTE', 'DELETE', String(deletedRoute._id), HistoryService.buildDeleteChanges(before, ROUTE_FIELDS));
+const deleteRoute = async (routeId: string): Promise<ServiceResult<IRoute>> => {
+    try {
+        const route = await RouteModel.findById(routeId).exec();
 
-    return deletedRoute;
+        if (!route) {
+            return { success: false, error: `No route found with ID: ${routeId}`, statusCode: 404 };
+        }
+
+        const before = route.toObject() as Record<string, unknown>;
+        await PointModel.deleteMany({ routeId }).exec();
+        const deletedRoute = await RouteModel.findByIdAndDelete(routeId).exec();
+
+        if (!deletedRoute) {
+            return { success: false, error: `No route found with ID: ${routeId}`, statusCode: 404 };
+        }
+
+        await HistoryService.recordHistory('ROUTE', 'DELETE', String(deletedRoute._id), HistoryService.buildDeleteChanges(before, ROUTE_FIELDS));
+
+        return { success: true, data: deletedRoute };
+    } catch {
+        return { success: false, error: 'Internal data server error' };
+    }
 };
 
 export default {

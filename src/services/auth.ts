@@ -46,7 +46,7 @@ export const refreshUserSession = async (incomingRefreshToken: string) => {
     const user = await User.findById(payload.id).exec();
 
     if (!user || !user.enabled) {
-        throw new Error('Usuario no encontrado');
+        throw new Error('User not found');
     }
 
     const tokens = getTokens(user);

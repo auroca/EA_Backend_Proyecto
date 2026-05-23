@@ -4,7 +4,7 @@ import Logging from '../library/Logging';
 
 const passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{6,}$/;
 
-const passwordMessage = 'La contraseña debe tener al menos 6 caracteres, una mayúscula, un número y un carácter especial';
+const passwordMessage = 'Password must have at least 6 characters, one uppercase letter, one number, and one special character';
 
 export const ValidateJoi = (schema: ObjectSchema) => {
     return async (req: Request, res: Response, next: NextFunction) => {
@@ -13,7 +13,7 @@ export const ValidateJoi = (schema: ObjectSchema) => {
             next();
         } catch (error) {
             Logging.error('Joi body validation error', error);
-            return res.status(422).json({ error });
+            return res.status(422).json({ status: 'error', message: 'Invalid request body' });
         }
     };
 };
@@ -25,7 +25,7 @@ export const ValidateQuery = (schema: ObjectSchema) => {
             next();
         } catch (error) {
             Logging.error('Joi query validation error', error);
-            return res.status(422).json({ error });
+            return res.status(422).json({ status: 'error', message: 'Invalid query parameters' });
         }
     };
 };
@@ -46,8 +46,8 @@ export const Schemas = {
             email: Joi.string().email().required(),
             password: Joi.string().pattern(passwordRegex).required().messages({
                 'string.pattern.base': passwordMessage,
-                'string.empty': 'La contraseña es obligatoria',
-                'any.required': 'La contraseña es obligatoria'
+                'string.empty': 'Password is required',
+                'any.required': 'Password is required'
             }),
             enabled: Joi.boolean().optional().default(true),
             role: Joi.string().valid('admin', 'user').optional().default('user')
