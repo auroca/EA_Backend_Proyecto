@@ -75,6 +75,50 @@ const readAll = async (req: Request, res: Response, next: NextFunction) => {
     }
 };
 
+const readInsidePolygon = async (req: Request, res: Response, next: NextFunction) => {
+    const coordinates = req.body?.coordinates;
+
+    if (!Array.isArray(coordinates)) {
+        return res.status(400).json({
+            status: 'error',
+            message: 'coordinates must be an array of [longitude, latitude]'
+        });
+    }
+
+    const parsedCoordinates = coordinates.filter((coordinate: unknown): coordinate is [number, number] => {
+        if (!Array.isArray(coordinate) || coordinate.length !== 2) {
+            return false;
+        }
+
+        const longitude = coordinate[0];
+const latitude = coordinate[1];
+
+return (
+    typeof longitude === 'number' &&
+    typeof latitude === 'number' &&
+    longitude >= -180 &&
+    longitude <= 180 &&
+    latitude >= -90 &&
+    latitude <= 90
+);
+    });
+
+    if (parsedCoordinates.length !== coordinates.length || parsedCoordinates.length < 3) {
+        return res.status(400).json({
+            status: 'error',
+            message: 'Invalid polygon. Use at least 3 coordinates with format [longitude, latitude]. Longitude must be between -180 and 180 and latitude between -90 and 90' 
+        });
+    }
+
+    const result = await RouteService.getRoutesInsidePolygon(parsedCoordinates);
+
+    if (result.success) {
+        return res.status(200).json(result.data);
+    }
+
+    return sendServiceError(res, result.error, result.statusCode);
+};
+
 const updateRoute = async (req: Request, res: Response, next: NextFunction) => {
     const routeId = req.params.routeId ?? req.params.RouteId;
 
@@ -114,6 +158,7 @@ export default {
     createRoute,
     readRoute,
     readAll,
+    readInsidePolygon,
     updateRoute,
     deleteRoute
 };

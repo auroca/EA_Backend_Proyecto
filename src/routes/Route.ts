@@ -206,6 +206,46 @@ router.get('/', ValidateQuery(Schemas.Route.listQuery), controller.readAll);
 
 /**
  * @openapi
+ * /routes/inside-polygon:
+ *   post:
+ *     summary: Search Routes inside a polygon
+ *     tags: [routes]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - coordinates
+ *             properties:
+ *               coordinates:
+ *                 type: array
+ *                 description: Polygon coordinates using [longitude, latitude]
+ *                 items:
+ *                   type: array
+ *                   minItems: 2
+ *                   maxItems: 2
+ *                   items:
+ *                     type: number
+ *                 example:
+ *                   [
+ *                     [2.1402, 41.3661],
+ *                     [2.2064, 41.3661],
+ *                     [2.2064, 41.4089],
+ *                     [2.1402, 41.4089],
+ *                     [2.1402, 41.3661]
+ *                   ]
+ *     responses:
+ *       200:
+ *         description: Routes found inside the polygon
+ *       400:
+ *         description: Invalid polygon
+ */
+router.post('/inside-polygon', controller.readInsidePolygon);
+
+/**
+ * @openapi
  * /routes/{routeId}:
  *   get:
  *     summary: Get a Route by ID
