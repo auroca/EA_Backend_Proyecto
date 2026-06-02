@@ -40,5 +40,16 @@ export const config = {
             sameSite: 'lax' as const,
             path: '/'
         }
+    },
+    ia: {
+        llmUrl: process.env.UPC_LLM_URL || 'http://10.4.119.50:8080/api/generate',
+        llmModel: process.env.UPC_LLM_MODEL || 'qwen2.5:14b',
+        publicBaseUrl: process.env.PUBLIC_BASE_URL || `http://localhost:${SERVER_PORT}`,
+        routeSearchLimit: process.env.IA_ROUTE_SEARCH_LIMIT ? Number(process.env.IA_ROUTE_SEARCH_LIMIT) : 5
+    },
+    weaviate: {
+        url: process.env.WEAVIATE_URL || '',
+        apiKey: process.env.WEAVIATE_API_KEY || '',
+        routesCollection: process.env.WEAVIATE_ROUTES_COLLECTION || 'Routes'
     }
 };

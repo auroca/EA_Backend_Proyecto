@@ -12,6 +12,7 @@ import PointRoutes from './routes/Point';
 import ChatRoutes from './routes/Chat';
 import HistoryRoutes from './routes/History';
 import ChangeRoutes from './routes/Change';
+import IARoutes from './routes/IA';
 import authRoutes from './routes/auth';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './swagger';
@@ -77,6 +78,7 @@ const StartServer = () => {
     router.use('/chats', ChatRoutes);
     router.use('/history', HistoryRoutes);
     router.use('/changes', ChangeRoutes);
+    router.use('/ia', IARoutes);
 
     /** Healthcheck */
     router.get('/ping', (req, res, next) => res.status(200).json({ hello: 'world' }));

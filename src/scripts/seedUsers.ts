@@ -3,6 +3,7 @@ import bcrypt from 'bcrypt';
 import dotenv from 'dotenv';
 import User from '../models/User';
 import Logging from '../library/Logging';
+import { config } from '../config/config';
 
 dotenv.config();
 
@@ -313,10 +314,7 @@ const SEED_USERS: SeedUser[] = [
 
 async function seedUsers() {
     try {
-        const MONGO_URL = process.env.MONGO_URI || '';
-        if (!MONGO_URL) {
-            throw new Error('MONGO_URI is not configured in .env');
-        }
+        const MONGO_URL = config.mongo.url;
 
         await mongoose.connect(MONGO_URL, { retryWrites: true, w: 'majority' });
         Logging.info('MongoDB connection established');
