@@ -1,6 +1,7 @@
 import { NextFunction, Response } from 'express';
 import mongoose from 'mongoose';
 import ChatService from '../services/Chat';
+import NotificationService from '../services/Notification';
 import { parsePagination } from '../library/Pagination';
 import Filters, { FieldSpec } from '../library/Filters';
 import { AuthRequest } from '../middleware/auth';
@@ -114,10 +115,17 @@ const addMessage = async (req: AuthRequest, res: Response, next: NextFunction) =
     if (!isValidObjectId(chatId) || !userId || !message) {
         return res.status(400).json({ status: 'error', message: 'chatId and message are required' });
     }
-
     const result = await ChatService.addMessage(chatId, userId, message);
 
     if (result.success) {
+        void (async () => {
+            try {
+                await NotificationService.notifyChatMessage(result.data, userId, message);
+            } catch {
+                // Push notifications are best-effort; the chat message response should not fail.
+            }
+        })();
+
         return res.status(200).json(result.data);
     }
 

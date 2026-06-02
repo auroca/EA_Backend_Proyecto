@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import RouteService from '../services/Route';
+import NotificationService from '../services/Notification';
 import { parsePagination } from '../library/Pagination';
 import Filters, { FieldSpec } from '../library/Filters';
 import { AuthRequest } from '../middleware/auth';
@@ -88,6 +89,14 @@ const updateRoute = async (req: Request, res: Response, next: NextFunction) => {
     const result = await RouteService.updateRoute(routeId, data);
 
     if (result.success) {
+        void (async () => {
+            try {
+                await NotificationService.notifyFavoriteRouteUpdated(routeId, result.data?.name);
+            } catch {
+                // Push notifications are best-effort; the route update response should not fail.
+            }
+        })();
+
         return res.status(200).json(result.data);
     }
 

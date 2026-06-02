@@ -11,6 +11,11 @@ export interface IUser {
     enabled: boolean;
     role: UserRole;
     favoriteRoutes: mongoose.Types.ObjectId[];
+    fcmTokens: {
+        token: string;
+        platform: 'android' | 'ios' | 'web';
+        updatedAt: Date;
+    }[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -39,7 +44,22 @@ const UserSchema: Schema = new Schema(
                 ref: 'Route',
                 default: []
             }
-        ]
+        ],
+        fcmTokens: {
+            type: [
+                {
+                    token: { type: String, required: true },
+                    platform: {
+                        type: String,
+                        enum: ['android', 'ios', 'web'],
+                        required: true
+                    },
+                    updatedAt: { type: Date, default: Date.now }
+                }
+            ],
+            default: [],
+            select: false
+        }
     },
     {
         timestamps: true,
@@ -49,12 +69,11 @@ const UserSchema: Schema = new Schema(
             virtuals: true,
             transform: function (doc, ret) {
                 delete ret.password;
+                delete ret.fcmTokens;
                 return ret;
             }
         },
-        toObject: {
-            virtuals: true
-        }
+        toObject: { virtuals: true }
     }
 );
 

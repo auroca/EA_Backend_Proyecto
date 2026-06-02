@@ -170,6 +170,48 @@ const toggleFavorite = async (req: Request, res: Response, next: NextFunction) =
     return sendServiceError(res, result.error, result.statusCode);
 };
 
+const registerFcmToken = async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.params.userId ?? req.params.UserId;
+
+    if (!isValidObjectId(userId)) {
+        return res.status(400).json({
+            status: 'error',
+            message: 'Provided ID has an invalid format'
+        });
+    }
+
+    const result = await UserService.registerFcmToken(userId, req.body.token, req.body.platform);
+
+    if (result.success) {
+        return res.status(200).json({
+            message: 'FCM token registered'
+        });
+    }
+
+    return sendServiceError(res, result.error, result.statusCode);
+};
+
+const unregisterFcmToken = async (req: Request, res: Response, next: NextFunction) => {
+    const userId = req.params.userId ?? req.params.UserId;
+
+    if (!isValidObjectId(userId)) {
+        return res.status(400).json({
+            status: 'error',
+            message: 'Provided ID has an invalid format'
+        });
+    }
+
+    const result = await UserService.unregisterFcmToken(userId, req.body.token);
+
+    if (result.success) {
+        return res.status(200).json({
+            message: 'FCM token removed'
+        });
+    }
+
+    return sendServiceError(res, result.error, result.statusCode);
+};
+
 export default {
     createUser,
     readUser,
@@ -179,5 +221,7 @@ export default {
     readFavorites,
     addFavorite,
     removeFavorite,
-    toggleFavorite
+    toggleFavorite,
+    registerFcmToken,
+    unregisterFcmToken
 };
