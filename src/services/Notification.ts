@@ -115,17 +115,26 @@ const sendPushToUsers = async (userIds: string[], title: string, body: string, d
 
 const notifyChatMessage = async (chat: any, senderId: string, message: string) => {
     const recipientIds = (chat.participants ?? []).map((participant: any) => String(participant._id ?? participant)).filter((participantId: string) => participantId !== String(senderId));
+    const sender = (chat.participants ?? []).find((participant: any) => String(participant._id ?? participant) === String(senderId));
+    const senderName = sender?.username ?? sender?.name ?? 'Someone';
+    const chatName = typeof chat.name === 'string' && chat.name.trim().length > 0 ? chat.name.trim() : 'Chat';
+    const title = `${chatName} - ${senderName}`;
+    const body = shorten(message);
 
     Logging.info('Chat message notification requested', {
         chatId: String(chat._id),
+        chatName,
+        senderName,
         senderId: String(senderId),
         recipientCount: recipientIds.length
     });
 
-    return sendPushToUsers(recipientIds, 'New chat message', shorten(message), {
+    return sendPushToUsers(recipientIds, title, body, {
         type: 'chat',
         chatId: String(chat._id),
-        senderId: String(senderId)
+        chatName,
+        senderId: String(senderId),
+        senderName
     });
 };
 
