@@ -1,2 +1,6 @@
 build/
 node_modules/
+firebase-service-account*.json
+*.service-account.json
+.env
+.env.*

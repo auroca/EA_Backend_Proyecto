@@ -15,6 +15,7 @@ import ChangeRoutes from './routes/Change';
 import authRoutes from './routes/auth';
 import swaggerUi from 'swagger-ui-express';
 import { swaggerSpec } from './swagger';
+import achievementRoutes from './routes/Achievement';
 
 const router = express();
 
@@ -77,6 +78,7 @@ const StartServer = () => {
     router.use('/chats', ChatRoutes);
     router.use('/history', HistoryRoutes);
     router.use('/changes', ChangeRoutes);
+    router.use('/achievements', achievementRoutes);
 
     /** Healthcheck */
     router.get('/ping', (req, res, next) => res.status(200).json({ hello: 'world' }));
