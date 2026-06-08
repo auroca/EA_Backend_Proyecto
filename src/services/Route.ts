@@ -253,9 +253,7 @@ const getRoutesInsidePolygon = async (coordinates: PolygonCoordinate[]): Promise
                 const routeObject = typeof route.toObject === 'function' ? route.toObject() : route;
                 const routePoints = pointsInsideByRouteId.get(String(routeObject._id)) ?? [];
 
-                const images = routePoints
-                    .map((point: any) => point.image)
-                    .filter((image: unknown): image is string => typeof image === 'string' && image.trim() !== '');
+                const images = routePoints.map((point: any) => point.image).filter((image: unknown): image is string => typeof image === 'string' && image.trim() !== '');
 
                 return {
                     ...routeObject,

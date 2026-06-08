@@ -92,22 +92,15 @@ const readInsidePolygon = async (req: Request, res: Response, next: NextFunction
         }
 
         const longitude = coordinate[0];
-const latitude = coordinate[1];
+        const latitude = coordinate[1];
 
-return (
-    typeof longitude === 'number' &&
-    typeof latitude === 'number' &&
-    longitude >= -180 &&
-    longitude <= 180 &&
-    latitude >= -90 &&
-    latitude <= 90
-);
+        return typeof longitude === 'number' && typeof latitude === 'number' && longitude >= -180 && longitude <= 180 && latitude >= -90 && latitude <= 90;
     });
 
     if (parsedCoordinates.length !== coordinates.length || parsedCoordinates.length < 3) {
         return res.status(400).json({
             status: 'error',
-            message: 'Invalid polygon. Use at least 3 coordinates with format [longitude, latitude]. Longitude must be between -180 and 180 and latitude between -90 and 90' 
+            message: 'Invalid polygon. Use at least 3 coordinates with format [longitude, latitude]. Longitude must be between -180 and 180 and latitude between -90 and 90'
         });
     }
 
