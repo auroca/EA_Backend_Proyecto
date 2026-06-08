@@ -44,6 +44,8 @@ type RouteResponse = IRoute & {
     points: RoutePointSummary[];
 };
 
+type PolygonCoordinate = [number, number];
+
 const populateRoutePoints = (query: any) =>
     query.populate({
         path: 'points',
@@ -81,6 +83,21 @@ const formatRouteResponse = (route: any): RouteResponse | null => {
 
 const isRouteResponse = (route: RouteResponse | null): route is RouteResponse => route !== null;
 
+const closePolygon = (coordinates: PolygonCoordinate[]): PolygonCoordinate[] => {
+    if (coordinates.length === 0) {
+        return coordinates;
+    }
+
+    const first = coordinates[0];
+    const last = coordinates[coordinates.length - 1];
+
+    if (first[0] === last[0] && first[1] === last[1]) {
+        return coordinates;
+    }
+
+    return [...coordinates, first];
+};
+
 const createRoute = async (input: RouteCreateInput): Promise<ServiceResult<RouteResponse>> => {
     try {
         const { points, images, ...routeInput } = input as RouteCreateInput & { images?: string[] };
@@ -98,7 +115,11 @@ const createRoute = async (input: RouteCreateInput): Promise<ServiceResult<Route
                 longitude: point.longitude,
                 image: point.image,
                 routeId: savedRoute._id,
-                index: typeof point.index === 'number' ? point.index : index
+                index: typeof point.index === 'number' ? point.index : index,
+                location: {
+                    type: 'Point',
+                    coordinates: [point.longitude, point.latitude]
+                }
             }));
 
             const savedPoints = await PointModel.insertMany(pointDocuments);
@@ -161,6 +182,103 @@ const getAllRoutes = async (pagination?: PaginationParams, filter?: Record<strin
                     totalPages: Math.ceil(total / limit)
                 }
             }
+        };
+    } catch {
+        return { success: false, error: 'Internal data server error' };
+    }
+};
+
+const getRoutesInsidePolygon = async (coordinates: PolygonCoordinate[]): Promise<ServiceResult<RouteResponse[]>> => {
+    try {
+        if (!Array.isArray(coordinates) || coordinates.length < 3) {
+            return { success: false, error: 'Polygon must contain at least 3 coordinates', statusCode: 400 };
+        }
+
+        const closedCoordinates = closePolygon(coordinates);
+
+        const pointsInsidePolygon = await PointModel.find({
+            location: {
+                $geoWithin: {
+                    $geometry: {
+                        type: 'Polygon',
+                        coordinates: [closedCoordinates]
+                    }
+                }
+            }
+        })
+            .sort({ routeId: 1, index: 1 })
+            .exec();
+
+        const routeIdsWithPointsInside = [...new Set(pointsInsidePolygon.map((point: any) => String(point.routeId)))];
+
+        const allPointsFromCandidateRoutes = await PointModel.find({
+            routeId: { $in: routeIdsWithPointsInside }
+        })
+            .sort({ routeId: 1, index: 1 })
+            .exec();
+
+        const pointsInsideByRouteId = new Map<string, any[]>();
+        const totalPointsByRouteId = new Map<string, number>();
+
+        pointsInsidePolygon.forEach((point: any) => {
+            const routeId = String(point.routeId);
+            const currentPoints = pointsInsideByRouteId.get(routeId) ?? [];
+
+            currentPoints.push(point);
+            pointsInsideByRouteId.set(routeId, currentPoints);
+        });
+
+        allPointsFromCandidateRoutes.forEach((point: any) => {
+            const routeId = String(point.routeId);
+            const currentTotal = totalPointsByRouteId.get(routeId) ?? 0;
+
+            totalPointsByRouteId.set(routeId, currentTotal + 1);
+        });
+
+        const routeIdsFullyInside = routeIdsWithPointsInside.filter((routeId) => {
+            const insideCount = pointsInsideByRouteId.get(routeId)?.length ?? 0;
+            const totalCount = totalPointsByRouteId.get(routeId) ?? 0;
+
+            return totalCount > 0 && insideCount === totalCount;
+        });
+
+        const routes = await RouteModel.find({
+            _id: { $in: routeIdsFullyInside }
+        })
+            .sort({ _id: 1 })
+            .exec();
+
+        const result = routes
+            .map((route: any) => {
+                const routeObject = typeof route.toObject === 'function' ? route.toObject() : route;
+                const routePoints = pointsInsideByRouteId.get(String(routeObject._id)) ?? [];
+
+                const images = routePoints
+                    .map((point: any) => point.image)
+                    .filter((image: unknown): image is string => typeof image === 'string' && image.trim() !== '');
+
+                return {
+                    ...routeObject,
+                    images,
+                    points: routePoints.map((point: any) => ({
+                        _id: point._id,
+                        name: point.name,
+                        description: point.description,
+                        latitude: point.latitude,
+                        longitude: point.longitude,
+                        image: point.image,
+                        routeId: point.routeId,
+                        index: point.index,
+                        createdAt: point.createdAt,
+                        updatedAt: point.updatedAt
+                    }))
+                };
+            })
+            .filter((route) => route.points.length > 0);
+
+        return {
+            success: true,
+            data: result
         };
     } catch {
         return { success: false, error: 'Internal data server error' };
@@ -231,6 +349,7 @@ export default {
     createRoute,
     getRoute,
     getAllRoutes,
+    getRoutesInsidePolygon,
     updateRoute,
     deleteRoute
 };
