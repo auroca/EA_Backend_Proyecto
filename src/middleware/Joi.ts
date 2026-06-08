@@ -63,6 +63,14 @@ export const Schemas = {
             enabled: Joi.boolean().optional(),
             role: Joi.string().valid('admin', 'user').optional()
         }).min(1),
+        fcmToken: Joi.object({
+            token: Joi.string().trim().required(),
+            platform: Joi.string().valid('android', 'ios', 'web').required()
+        }),
+
+        fcmTokenDelete: Joi.object({
+            token: Joi.string().trim().required()
+        }),
         listQuery: Joi.object({
             filter: Joi.object({
                 name: Joi.alternatives().try(Joi.string(), Joi.array().items(Joi.string())).optional(),

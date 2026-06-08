@@ -241,6 +241,89 @@ const toggleFavoriteRoute = async (userId: string, routeId: string): Promise<Ser
     }
 };
 
+const registerFcmToken = async (userId: string, token: string, platform: 'android' | 'ios' | 'web'): Promise<ServiceResult<IUserModel>> => {
+    try {
+        await User.updateMany({ 'fcmTokens.token': token }, { $pull: { fcmTokens: { token } } }).exec();
+
+        const user = await User.findByIdAndUpdate(
+            userId,
+            {
+                $addToSet: {
+                    fcmTokens: {
+                        token,
+                        platform,
+                        updatedAt: new Date()
+                    }
+                }
+            },
+            { new: true }
+        ).exec();
+
+        if (!user) {
+            return {
+                success: false,
+                error: `No user found with ID: ${userId}`,
+                statusCode: 404
+            };
+        }
+
+        return {
+            success: true,
+            data: user
+        };
+    } catch {
+        return {
+            success: false,
+            error: 'Internal data server error'
+        };
+    }
+};
+
+const unregisterFcmToken = async (userId: string, token: string): Promise<ServiceResult<IUserModel>> => {
+    try {
+        const user = await User.findByIdAndUpdate(userId, { $pull: { fcmTokens: { token } } }, { new: true }).exec();
+
+        if (!user) {
+            return {
+                success: false,
+                error: `No user found with ID: ${userId}`,
+                statusCode: 404
+            };
+        }
+
+        return {
+            success: true,
+            data: user
+        };
+    } catch {
+        return {
+            success: false,
+            error: 'Internal data server error'
+        };
+    }
+};
+
+const getFcmTokensByUserIds = async (userIds: string[]): Promise<string[]> => {
+    const users = await User.find({ _id: { $in: userIds } })
+        .select('+fcmTokens')
+        .lean()
+        .exec();
+
+    return users.flatMap((user: any) => (user.fcmTokens ?? []).map((item: any) => item.token));
+};
+
+const getUserIdsByFavoriteRoute = async (routeId: string): Promise<string[]> => {
+    const users = await User.find({ favoriteRoutes: routeId }).select('_id').lean().exec();
+
+    return users.map((user: any) => String(user._id));
+};
+
+const removeFcmTokens = async (tokens: string[]) => {
+    if (tokens.length === 0) return;
+
+    await User.updateMany({ 'fcmTokens.token': { $in: tokens } }, { $pull: { fcmTokens: { token: { $in: tokens } } } }).exec();
+};
+
 export default {
     createUser,
     getUser,
@@ -250,5 +333,10 @@ export default {
     getFavoriteRoutes,
     addFavoriteRoute,
     removeFavoriteRoute,
-    toggleFavoriteRoute
+    toggleFavoriteRoute,
+    registerFcmToken,
+    unregisterFcmToken,
+    getFcmTokensByUserIds,
+    getUserIdsByFavoriteRoute,
+    removeFcmTokens
 };

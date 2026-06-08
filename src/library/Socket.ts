@@ -5,6 +5,7 @@ import Logging from './Logging';
 import { verifyAccessToken } from '../utils/jwt';
 import Chat from '../models/Chat';
 import ChatService from '../services/Chat';
+import NotificationService from '../services/Notification';
 
 // Socket event type definitions for extensibility
 type ClientToServerEvents = Record<string, (...args: any[]) => void>;
@@ -99,7 +100,12 @@ const registerConnectionEvents = (socket: Socket<ClientToServerEvents, ServerToC
             }
 
             // Save message to database
-            await ChatService.addMessage(chatId, socket.data.user_id, message);
+            const result = await ChatService.addMessage(chatId, socket.data.user_id, message);
+
+            if (!result.success) {
+                Logging.error(`Error saving chat message - CHAT_ID: [${chatId}] - ERROR: [${result.error}]`);
+                return;
+            }
 
             // Broadcast message to all users in the chat room
             const chatRoom = getChatRoomByChatId(chatId);
@@ -112,6 +118,10 @@ const registerConnectionEvents = (socket: Socket<ClientToServerEvents, ServerToC
             });
 
             Logging.info(`Chat message - CHAT_ID: [${chatId}] - USERNAME: [${username}] - MESSAGE: [${message}]`);
+
+            void NotificationService.notifyChatMessage(result.data, socket.data.user_id, message).catch((error) => {
+                Logging.error('Error sending chat push notification', error);
+            });
         } catch (error) {
             Logging.error(`Error handling chat message - ERROR: [${error}]`);
         }
