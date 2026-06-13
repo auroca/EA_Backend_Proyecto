@@ -4,12 +4,14 @@ import { UserRole } from './JwtPayload';
 
 export interface IUser {
     name: string;
-    surname: string;
+    surname?: string;
     username: string;
     email: string;
-    password: string;
+    password?: string;
     enabled: boolean;
     role: UserRole;
+    authProvider: 'local' | 'google';
+    providerId?: string;
     favoriteRoutes: mongoose.Types.ObjectId[];
     fcmTokens: {
         token: string;
@@ -27,16 +29,26 @@ export interface IUserModel extends IUser, Document {
 const UserSchema: Schema = new Schema(
     {
         name: { type: String, required: true },
-        surname: { type: String, required: true },
+        surname: { type: String, required: false, default: '' },
         username: { type: String, required: true, unique: true },
         email: { type: String, required: true, unique: true },
-        password: { type: String, required: true },
+        password: { type: String, required: false },
         enabled: { type: Boolean, default: true },
         role: {
             type: String,
             enum: ['admin', 'user'],
             default: 'user',
             required: true
+        },
+        authProvider: {
+            type: String,
+            enum: ['local', 'google'],
+            default: 'local',
+            required: true
+        },
+        providerId: {
+            type: String,
+            required: false
         },
         favoriteRoutes: [
             {
@@ -87,7 +99,7 @@ UserSchema.virtual('routes', {
 UserSchema.pre('save', async function (next) {
     const user = this as IUserModel;
 
-    if (!user.isModified('password')) {
+    if (!user.password || !user.isModified('password')) {
         return next();
     }
 
@@ -101,6 +113,10 @@ UserSchema.pre('save', async function (next) {
 });
 
 UserSchema.methods.comparePassword = async function (candidatePassword: string): Promise<boolean> {
+    if (!this.password) {
+        return false;
+    }
+
     return await bcrypt.compare(candidatePassword, this.password);
 };
 
