@@ -15,6 +15,8 @@ const CORS_ORIGINS = (process.env.CORS_ORIGIN || 'http://localhost:5173,http://l
     .map((o) => o.trim())
     .filter(Boolean);
 
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '136495957431-f36ubav6rnlu1aultggn38u5a239masj.apps.googleusercontent.com';
+
 export const config = {
     mongo: {
         url: MONGO_URL
@@ -27,6 +29,9 @@ export const config = {
         refreshSecret: JWT_REFRESH_SECRET,
         accessExpiresIn: JWT_ACCESS_EXPIRES_IN,
         refreshExpiresIn: JWT_REFRESH_EXPIRES_IN
+    },
+    oauth: {
+        googleClientId: GOOGLE_CLIENT_ID
     },
     cors: {
         origins: CORS_ORIGINS

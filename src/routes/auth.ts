@@ -93,4 +93,48 @@ router.post('/logout', controller.logout);
  */
 router.get('/me', authenticateToken, controller.getMe);
 
+/**
+ * @openapi
+ * /auth/google:
+ *   post:
+ *     summary: Login user with Google
+ *     tags: [auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - idToken
+ *             properties:
+ *               idToken:
+ *                 type: string
+ *                 example: "google_id_token"
+ *     responses:
+ *       200:
+ *         description: OK
+ *       400:
+ *         description: idToken required
+ *       401:
+ *         description: Invalid Google login
+ */
+router.post('/google', controller.loginGoogle);
+
+/**
+ * @openapi
+ * /auth/me/creator-stats:
+ *   get:
+ *     summary: Get authenticated creator statistics
+ *     tags: [auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: OK
+ *       401:
+ *         description: Unauthorized
+ */
+router.get('/me/creator-stats', authenticateToken, controller.getCreatorStats);
+
 export default router;
