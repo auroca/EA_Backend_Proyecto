@@ -1,5 +1,6 @@
 import RouteModel, { IRoute } from '../models/Route';
 import PointModel from '../models/Point';
+import ReviewModel from '../models/Review';
 import HistoryService from './History';
 import { ListResult, ServiceResult } from '../types/ServiceResult';
 
@@ -42,6 +43,7 @@ type RoutePointSummary = {
 type RouteResponse = IRoute & {
     images: string[];
     points: RoutePointSummary[];
+    ratingAverage: number;
 };
 
 type PolygonCoordinate = [number, number];
@@ -53,6 +55,28 @@ const populateRoutePoints = (query: any) =>
         options: { sort: { index: 1 } }
     });
 
+const populateRouteReviews = (query: any) => query.populate('reviews');
+
+const populateRouteDetails = (query: any) => populateRouteReviews(populateRoutePoints(query));
+
+const calculateRatingAverage = (reviews: any[]): number => {
+    let total = 0;
+    let count = 0;
+
+    for (const review of reviews) {
+        const ratings = Array.isArray(review.ratings) ? review.ratings : [];
+
+        for (const rating of ratings) {
+            if (typeof rating.score === 'number') {
+                total += rating.score;
+                count++;
+            }
+        }
+    }
+
+    return count > 0 ? Number((total / count).toFixed(2)) : 0;
+};
+
 const formatRouteResponse = (route: any): RouteResponse | null => {
     if (!route) {
         return null;
@@ -60,12 +84,14 @@ const formatRouteResponse = (route: any): RouteResponse | null => {
 
     const routeObject = typeof route.toObject === 'function' ? route.toObject() : route;
     const points = Array.isArray(routeObject.points) ? routeObject.points : [];
+    const reviews = Array.isArray(routeObject.reviews) ? routeObject.reviews : [];
 
     const images = points.map((point: any) => point.image).filter((image: unknown): image is string => typeof image === 'string' && image.trim() !== '');
 
     return {
         ...routeObject,
         images,
+        ratingAverage: calculateRatingAverage(reviews),
         points: points.map((point: any) => ({
             _id: point._id,
             name: point.name,
@@ -129,7 +155,7 @@ const createRoute = async (input: RouteCreateInput): Promise<ServiceResult<Route
             }
         }
 
-        const routeWithPoints = await populateRoutePoints(RouteModel.findById(savedRoute._id)).exec();
+        const routeWithPoints = await populateRouteDetails(RouteModel.findById(savedRoute._id)).exec();
         const formattedRoute = formatRouteResponse(routeWithPoints);
 
         if (!formattedRoute) {
@@ -144,7 +170,7 @@ const createRoute = async (input: RouteCreateInput): Promise<ServiceResult<Route
 
 const getRoute = async (routeId: string): Promise<ServiceResult<RouteResponse>> => {
     try {
-        const route = await populateRoutePoints(RouteModel.findById(routeId)).exec();
+        const route = await populateRouteDetails(RouteModel.findById(routeId)).exec();
         const formattedRoute = formatRouteResponse(route);
 
         if (!formattedRoute) {
@@ -162,14 +188,14 @@ const getAllRoutes = async (pagination?: PaginationParams, filter?: Record<strin
         const effectiveFilter = filter && Object.keys(filter).length ? filter : {};
 
         if (!pagination) {
-            const routes = await populateRoutePoints(RouteModel.find(effectiveFilter).sort({ _id: 1 })).exec();
+            const routes = await populateRouteDetails(RouteModel.find(effectiveFilter).sort({ _id: 1 })).exec();
             return { success: true, data: routes.map((route: any) => formatRouteResponse(route)).filter(isRouteResponse) };
         }
 
         const { limit, page } = pagination;
         const skip = (page - 1) * limit;
 
-        const [data, total] = await Promise.all([populateRoutePoints(RouteModel.find(effectiveFilter).sort({ _id: 1 }).skip(skip).limit(limit)).exec(), RouteModel.countDocuments(effectiveFilter)]);
+        const [data, total] = await Promise.all([populateRouteDetails(RouteModel.find(effectiveFilter).sort({ _id: 1 }).skip(skip).limit(limit)).exec(), RouteModel.countDocuments(effectiveFilter)]);
 
         return {
             success: true,
@@ -246,6 +272,7 @@ const getRoutesInsidePolygon = async (coordinates: PolygonCoordinate[]): Promise
             _id: { $in: routeIdsFullyInside }
         })
             .sort({ _id: 1 })
+            .populate('reviews')
             .exec();
 
         const result = routes
@@ -258,6 +285,7 @@ const getRoutesInsidePolygon = async (coordinates: PolygonCoordinate[]): Promise
                 return {
                     ...routeObject,
                     images,
+                    ratingAverage: calculateRatingAverage(Array.isArray(routeObject.reviews) ? routeObject.reviews : []),
                     points: routePoints.map((point: any) => ({
                         _id: point._id,
                         name: point.name,
@@ -306,7 +334,7 @@ const updateRoute = async (routeId: string, input: Partial<IRoute>): Promise<Ser
             await HistoryService.recordHistory('ROUTE', 'MODIFY', String(savedRoute._id), HistoryService.buildModifyChanges(before, savedRoute.toObject() as Record<string, unknown>, changedFields));
         }
 
-        const routeWithPoints = await populateRoutePoints(RouteModel.findById(routeId)).exec();
+        const routeWithPoints = await populateRouteDetails(RouteModel.findById(routeId)).exec();
         const formattedRoute = formatRouteResponse(routeWithPoints);
 
         if (!formattedRoute) {
@@ -329,6 +357,7 @@ const deleteRoute = async (routeId: string): Promise<ServiceResult<IRoute>> => {
 
         const before = route.toObject() as Record<string, unknown>;
         await PointModel.deleteMany({ routeId }).exec();
+        await ReviewModel.deleteMany({ routeId }).exec();
         const deletedRoute = await RouteModel.findByIdAndDelete(routeId).exec();
 
         if (!deletedRoute) {

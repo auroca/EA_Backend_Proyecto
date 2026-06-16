@@ -56,4 +56,10 @@ RouteSchema.virtual('points', {
     options: { sort: { index: 1 } }
 });
 
+RouteSchema.virtual('reviews', {
+    ref: 'Review',
+    localField: '_id',
+    foreignField: 'routeId'
+});
+
 export default mongoose.model<IRouteModel>('Route', RouteSchema);
