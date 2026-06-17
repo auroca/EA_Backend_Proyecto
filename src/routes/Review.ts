@@ -1,6 +1,7 @@
 import express from 'express';
 import controller from '../controllers/Review';
 import { Schemas, ValidateJoi } from '../middleware/Joi';
+import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -112,8 +113,6 @@ const router = express.Router();
  *   get:
  *     summary: List all Reviews
  *     tags: [reviews]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: query
  *         name: limit
@@ -138,8 +137,6 @@ const router = express.Router();
  *     responses:
  *       200:
  *         description: OK. If limit and page are omitted, returns the full list.
- *       401:
- *         description: Unauthorized
  */
 router.get('/', controller.readAll);
 
@@ -149,8 +146,6 @@ router.get('/', controller.readAll);
  *   get:
  *     summary: Get a Review by ID
  *     tags: [reviews]
- *     security:
- *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: reviewId
@@ -163,8 +158,6 @@ router.get('/', controller.readAll);
  *         description: OK
  *       404:
  *         description: Not found
- *       401:
- *         description: Unauthorized
  */
 router.get('/:reviewId', controller.readReview);
 
@@ -185,14 +178,12 @@ router.get('/:reviewId', controller.readReview);
  *     responses:
  *       201:
  *         description: Created
- *       422:
- *         description: Validation failed (Joi)
  *       401:
  *         description: Unauthorized
- *       403:
- *         description: Forbidden
+ *       422:
+ *         description: Validation failed (Joi)
  */
-router.post('/', ValidateJoi(Schemas.Review.create), controller.createReview);
+router.post('/', authenticateToken, ValidateJoi(Schemas.Review.create), controller.createReview);
 
 /**
  * @openapi
@@ -218,16 +209,14 @@ router.post('/', ValidateJoi(Schemas.Review.create), controller.createReview);
  *     responses:
  *       200:
  *         description: Updated
+ *       401:
+ *         description: Unauthorized
  *       404:
  *         description: Not found
  *       422:
  *         description: Validation failed (Joi)
- *       401:
- *         description: Unauthorized
- *       403:
- *         description: Forbidden
  */
-router.put('/:reviewId', ValidateJoi(Schemas.Review.update), controller.updateReview);
+router.put('/:reviewId', authenticateToken, ValidateJoi(Schemas.Review.update), controller.updateReview);
 
 /**
  * @openapi
@@ -247,13 +236,11 @@ router.put('/:reviewId', ValidateJoi(Schemas.Review.update), controller.updateRe
  *     responses:
  *       200:
  *         description: OK
- *       404:
- *         description: Not found
  *       401:
  *         description: Unauthorized
- *       403:
- *         description: Forbidden
+ *       404:
+ *         description: Not found
  */
-router.delete('/:reviewId', controller.deleteReview);
+router.delete('/:reviewId', authenticateToken, controller.deleteReview);
 
 export default router;
