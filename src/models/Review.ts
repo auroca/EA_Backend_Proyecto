@@ -9,6 +9,7 @@ export interface IReview {
         label: string;
         score: number;
     }[];
+    averageRating?: number;
 }
 
 export interface IReviewModel extends IReview, Document {}
@@ -24,7 +25,8 @@ const ReviewSchema: Schema = new Schema(
                 label: { type: String, required: true },
                 score: { type: Number, required: true, min: 0, max: 5 }
             }
-        ]
+        ],
+        averageRating: { type: Number, required: true, default: 0, min: 0, max: 5 }
     },
     {
         timestamps: true,
@@ -32,6 +34,26 @@ const ReviewSchema: Schema = new Schema(
         id: false
     }
 );
+
+const calculateAverageRating = (ratings: IReview['ratings']): number => {
+    if (!Array.isArray(ratings) || ratings.length === 0) {
+        return 0;
+    }
+
+    const validScores = ratings.map((rating) => rating.score).filter((score) => typeof score === 'number' && Number.isFinite(score));
+
+    if (validScores.length === 0) {
+        return 0;
+    }
+
+    const total = validScores.reduce((sum, score) => sum + score, 0);
+    return Number((total / validScores.length).toFixed(2));
+};
+
+ReviewSchema.pre('validate', function (next) {
+    this.averageRating = calculateAverageRating(this.ratings);
+    next();
+});
 
 ReviewSchema.index({ userId: 1, routeId: 1 }, { unique: true });
 

@@ -41,9 +41,15 @@ const readAll = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const pagination = parsePagination(req.query);
         const routeId = req.query.routeId as string | undefined;
+        const userId = req.query.userId as string | undefined;
 
         if (routeId) {
             const reviews = await ReviewService.getReviewsByRoute(routeId);
+            return res.status(200).json(reviews);
+        }
+
+        if (userId) {
+            const reviews = await ReviewService.getReviewsByUser(userId);
             return res.status(200).json(reviews);
         }
 
