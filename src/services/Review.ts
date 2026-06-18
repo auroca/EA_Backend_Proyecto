@@ -13,9 +13,37 @@ type PaginatedResult<T> = {
 
 type ListResult<T> = PaginatedResult<T> | T[];
 
+export class DuplicateRouteReviewError extends Error {
+    constructor() {
+        super('You have already reviewed this route.');
+        this.name = 'DuplicateRouteReviewError';
+    }
+}
+
+const isDuplicateKeyError = (error: unknown): boolean => {
+    return typeof error === 'object' && error !== null && 'code' in error && (error as { code?: number }).code === 11000;
+};
+
 const createReview = async (input: IReview) => {
-    const review = new ReviewModel(input);
-    return await review.save();
+    const existingReview = await ReviewModel.findOne({
+        userId: input.userId,
+        routeId: input.routeId
+    }).exec();
+
+    if (existingReview) {
+        throw new DuplicateRouteReviewError();
+    }
+
+    try {
+        const review = new ReviewModel(input);
+        return await review.save();
+    } catch (error) {
+        if (isDuplicateKeyError(error)) {
+            throw new DuplicateRouteReviewError();
+        }
+
+        throw error;
+    }
 };
 
 const getReview = async (reviewId: string) => {

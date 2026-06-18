@@ -33,4 +33,6 @@ const ReviewSchema: Schema = new Schema(
     }
 );
 
+ReviewSchema.index({ userId: 1, routeId: 1 }, { unique: true });
+
 export default mongoose.model<IReviewModel>('Review', ReviewSchema);
