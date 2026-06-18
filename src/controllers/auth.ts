@@ -6,6 +6,7 @@ import User from '../models/User';
 import { sendServiceError } from '../utils/controllerResponses';
 import Route from '../models/Route';
 import Point from '../models/Point';
+import Review from '../models/Review';
 
 const buildLoginResponse = (user: any, accessToken: string, socket: any) => ({
     message: 'Login successful',
@@ -124,9 +125,12 @@ export const getCreatorStats = async (req: AuthRequest, res: Response) => {
             routeId: { $in: routeIds }
         });
 
+        const reviewsWritten = await Review.countDocuments({ userId });
+
         return res.status(200).json({
             routesCreated,
-            pointsCreated
+            pointsCreated,
+            reviewsWritten
         });
     } catch {
         return sendServiceError(res, 'Unexpected server error');
