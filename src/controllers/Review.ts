@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
-import ReviewService from '../services/Review';
+import ReviewService, { DuplicateRouteReviewError } from '../services/Review';
 import { parsePagination } from '../library/Pagination';
 import { AuthRequest } from '../middleware/auth';
 
@@ -18,6 +18,10 @@ const createReview = async (req: AuthRequest, res: Response, next: NextFunction)
 
         return res.status(201).json(savedReview);
     } catch (error) {
+        if (error instanceof DuplicateRouteReviewError) {
+            return res.status(409).json({ message: error.message });
+        }
+
         return res.status(500).json({ error });
     }
 };
