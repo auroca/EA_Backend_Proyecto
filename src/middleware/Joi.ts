@@ -264,5 +264,15 @@ export const Schemas = {
                 .min(1)
                 .optional()
         }).min(1)
+    },
+
+    IA: {
+        recommend: Joi.object({
+            question: Joi.string().trim().min(1).optional(),
+            pregunta: Joi.string().trim().min(1).optional(),
+            text: Joi.string().trim().min(1).optional(),
+            message: Joi.string().trim().min(1).optional(),
+            limit: Joi.number().integer().min(1).max(10).optional()
+        }).or('question', 'pregunta', 'text', 'message')
     }
 };

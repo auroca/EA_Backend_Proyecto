@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Route from '../models/Route';
 import Logging from '../library/Logging';
+import { config } from '../config/config';
 
 dotenv.config();
 
@@ -9,6 +10,7 @@ type SeedRoute = {
     _id: string;
     name?: string;
     description: string;
+    cover_image?: string;
     city: string;
     country: string;
     distance?: number;
@@ -203,6 +205,7 @@ const SEED_ROUTES: SeedRoute[] = [
 
 const ALLOWED_DIFFICULTIES = new Set(['easy', 'medium', 'hard']);
 const OBJECT_ID_REGEX = /^[0-9a-fA-F]{24}$/;
+const DEFAULT_COVER_IMAGE = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee';
 
 function validateSeedRoutes(routes: SeedRoute[]) {
     routes.forEach((route, index) => {
@@ -233,6 +236,7 @@ function mapToInsertableRoute(route: SeedRoute) {
         _id: route._id,
         name: route.name && route.name.trim().length > 0 ? route.name : ' ',
         description: route.description && route.description.trim().length > 0 ? route.description : ' ',
+        cover_image: route.cover_image && route.cover_image.trim().length > 0 ? route.cover_image : DEFAULT_COVER_IMAGE,
         city: route.city && route.city.trim().length > 0 ? route.city : ' ',
         country: route.country && route.country.trim().length > 0 ? route.country : ' ',
         distance: typeof route.distance === 'number' ? route.distance : 0,
@@ -245,10 +249,7 @@ function mapToInsertableRoute(route: SeedRoute) {
 
 async function seedRoutes() {
     try {
-        const MONGO_URL = process.env.MONGO_URI || '';
-        if (!MONGO_URL) {
-            throw new Error('MONGO_URI is not configured in .env');
-        }
+        const MONGO_URL = config.mongo.url;
 
         await mongoose.connect(MONGO_URL, { retryWrites: true, w: 'majority' });
         Logging.info('MongoDB connection established');

@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Point from '../models/Point';
 import Logging from '../library/Logging';
+import { config } from '../config/config';
 
 dotenv.config();
 
@@ -247,10 +248,7 @@ function validateSeedPoints(points: SeedPoint[]) {
 
 async function seedPoints() {
     try {
-        const MONGO_URL = process.env.MONGO_URI || '';
-        if (!MONGO_URL) {
-            throw new Error('MONGO_URI is not configured in .env');
-        }
+        const MONGO_URL = config.mongo.url;
 
         const pointsToInsert = buildSeedPoints();
         validateSeedPoints(pointsToInsert);
