@@ -13,21 +13,33 @@ from weaviate.classes.query import Filter
 try:
     from dotenv import load_dotenv
 
+    PROJECT_ROOT = Path(__file__).resolve().parent.parent
+    load_dotenv(PROJECT_ROOT / ".env", override=False)
     load_dotenv(Path(__file__).with_name(".env.weaviate"), override=False)
 except ImportError:
     pass
 
 
-COLLECTION = "Routes"
+COLLECTION = os.environ.get("WEAVIATE_ROUTES_COLLECTION", "Routes")
 MONGO_URI = os.environ.get("MONGO_URI", "mongodb://localhost:27017/trip2guide")
 MONGO_DB = os.environ.get("MONGO_DB", "trip2guide")
 MONGO_COLLECTION = os.environ.get("MONGO_ROUTES_COLLECTION", "routes")
 
 EMBEDDING_MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-embedder = SentenceTransformer(EMBEDDING_MODEL)
 
 
 def connect_weaviate():
+    missing_variables = [
+        name
+        for name in ("WEAVIATE_URL", "WEAVIATE_API_KEY")
+        if not os.environ.get(name)
+    ]
+
+    if missing_variables:
+        raise RuntimeError(
+            f"Missing required environment variables: {', '.join(missing_variables)}"
+        )
+
     return weaviate.connect_to_weaviate_cloud(
         cluster_url=os.environ["WEAVIATE_URL"],
         auth_credentials=Auth.api_key(os.environ["WEAVIATE_API_KEY"]),
@@ -125,6 +137,7 @@ def main():
 
         routes_weaviate_collection = get_routes_collection(weaviate_client)
         clear_routes_collection(routes_weaviate_collection)
+        embedder = SentenceTransformer(EMBEDDING_MODEL)
 
         for raw_route in raw_routes:
             route = normalize_route(raw_route)

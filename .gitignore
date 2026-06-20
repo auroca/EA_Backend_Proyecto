@@ -2,7 +2,7 @@ build/
 node_modules/
 firebase-service-account*.json
 *.service-account.json
-.env
 .env.*
+!/.env
 .venv/
 scripts/.env.weaviate
