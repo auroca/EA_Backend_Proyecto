@@ -10,7 +10,7 @@ type SeedRoute = {
     _id: string;
     name?: string;
     description: string;
-    cover_image?: string;
+    cover_image: string;
     city: string;
     country: string;
     distance?: number;
@@ -29,6 +29,7 @@ const SEED_ROUTES: SeedRoute[] = [
         difficulty: 'medium',
         city: 'Galicia',
         country: 'Spain',
+        cover_image: 'https://www.pabloalma.es/wp-content/uploads/fotos_de_familia_en_exteriores_pablo_alma_sevilla-100.webp',
         distance: 12,
         duration: 95,
         tags: []
@@ -41,6 +42,7 @@ const SEED_ROUTES: SeedRoute[] = [
         difficulty: 'medium',
         city: 'Galicia',
         country: 'Spain',
+        cover_image: 'https://thumbs.dreamstime.com/b/rel%C3%A1jese-escrito-en-una-playa-4323256.jpg',
         distance: 8,
         duration: 70,
         tags: []
@@ -53,6 +55,7 @@ const SEED_ROUTES: SeedRoute[] = [
         difficulty: 'medium',
         city: 'Galicia',
         country: 'Spain',
+        cover_image: 'https://ageingnomics.fundacionmapfre.org/media/2022/06/familia-amigos-motor-1200x600-1.jpg',
         distance: 15,
         duration: 120,
         tags: []
@@ -65,6 +68,7 @@ const SEED_ROUTES: SeedRoute[] = [
         difficulty: 'medium',
         city: 'Valencia',
         country: 'Spain',
+        cover_image: 'https://img.nh-hotels.net/8yYbq/aGoV8/original/Valencia_CAC.jpg?output-quality=70&resize=*:*&background-color=white',
         distance: 9,
         duration: 80,
         tags: []
@@ -77,6 +81,7 @@ const SEED_ROUTES: SeedRoute[] = [
         difficulty: 'medium',
         city: 'Valencia',
         country: 'Spain',
+        cover_image: 'https://images.squarespace-cdn.com/content/v1/5f7b618b9a735b31389fb9d9/3b6cb3f6-512d-41e3-9d5a-d5d2710eb326/Neverland_by-Unievento+%285%29.jpg',
         distance: 11,
         duration: 100,
         tags: []
@@ -89,6 +94,7 @@ const SEED_ROUTES: SeedRoute[] = [
         difficulty: 'medium',
         city: 'Valencia',
         country: 'Spain',
+        cover_image: 'https://parcdelturia.es/wp-content/uploads/2019/07/El-gulliver.jpg',
         distance: 6,
         duration: 65,
         tags: []
@@ -101,6 +107,7 @@ const SEED_ROUTES: SeedRoute[] = [
         country: 'Spain',
         name: 'Charming Seville',
         description: 'Charming Seville. A route to experience its warm atmosphere, beautiful corners, and the essence that makes the city unforgettable.',
+        cover_image: 'https://conocersevilla.com/wp/wp-content/uploads/2020/11/plaza-de-Espana-.jpg',
         distance: 10,
         duration: 90,
         tags: []
@@ -113,6 +120,7 @@ const SEED_ROUTES: SeedRoute[] = [
         difficulty: 'medium',
         city: 'Sevilla',
         country: 'Spain',
+        cover_image: 'https://cometeelmundo.net/sites/default/files/styles/max_1300x1300/public/media/blog/monumentos-de-sevilla-setas.jpg?itok=vyTavTWa',
         distance: 7,
         duration: 75,
         tags: []
@@ -125,6 +133,7 @@ const SEED_ROUTES: SeedRoute[] = [
         difficulty: 'medium',
         city: 'Sevilla',
         country: 'Spain',
+        cover_image: 'https://www.barcelo.com/guia-turismo/wp-content/uploads/2019/04/fiesta-en-sevilla.jpg',
         distance: 13,
         duration: 115,
         tags: []
@@ -137,6 +146,7 @@ const SEED_ROUTES: SeedRoute[] = [
         difficulty: 'easy',
         city: 'Madrid',
         country: 'Spain',
+        cover_image: 'https://ogotours.es/wp-content/uploads/2016/02/Fotos-antiguas-de-Madrid-blanco-y-negro-1966-768x565.jpg',
         distance: 5,
         duration: 55,
         tags: []
@@ -149,6 +159,7 @@ const SEED_ROUTES: SeedRoute[] = [
         difficulty: 'easy',
         city: 'Madrid',
         country: 'Spain',
+        cover_image: 'https://e01-elmundo.uecdn.es/assets/multimedia/imagenes/2023/11/10/16996169796001.jpg',
         distance: 14,
         duration: 110,
         tags: []
@@ -161,6 +172,7 @@ const SEED_ROUTES: SeedRoute[] = [
         country: 'Spain',
         name: 'Madrid in color',
         description: 'Madrid in color. A lively itinerary full of energy, diverse neighborhoods, and vibrant places that showcase the city personality.',
+        cover_image: 'https://www.civitatis.com/f/espana/madrid/guia/el-retiro.jpg',
         distance: 16,
         duration: 130,
         tags: []
@@ -173,6 +185,7 @@ const SEED_ROUTES: SeedRoute[] = [
         difficulty: 'easy',
         city: 'Barcelona',
         country: 'Spain',
+        cover_image: 'https://content-viajes.nationalgeographic.com.es/medio/2025/10/14/adobestock-217054941_db458e5c_251014124339_1280x853.webp',
         distance: 4,
         duration: 50,
         tags: []
@@ -185,6 +198,7 @@ const SEED_ROUTES: SeedRoute[] = [
         difficulty: 'easy',
         city: 'Barcelona',
         country: 'Spain',
+        cover_image: 'https://www.laramblabarcelona.com/wp-content/uploads/2018/02/atardecer-en-barcelona-montjuic.jpg',
         distance: 6,
         duration: 60,
         tags: []
@@ -197,6 +211,7 @@ const SEED_ROUTES: SeedRoute[] = [
         difficulty: 'easy',
         city: 'Barcelona',
         country: 'Spain',
+        cover_image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQKvZCNTkm1UXRk3-wSdarS5a9P8ZOyYDUVkg&s',
         distance: 9,
         duration: 85,
         tags: []
@@ -205,7 +220,15 @@ const SEED_ROUTES: SeedRoute[] = [
 
 const ALLOWED_DIFFICULTIES = new Set(['easy', 'medium', 'hard']);
 const OBJECT_ID_REGEX = /^[0-9a-fA-F]{24}$/;
-const DEFAULT_COVER_IMAGE = 'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee';
+
+function isValidUrl(value: string): boolean {
+    try {
+        new URL(value);
+        return true;
+    } catch {
+        return false;
+    }
+}
 
 function validateSeedRoutes(routes: SeedRoute[]) {
     routes.forEach((route, index) => {
@@ -220,15 +243,11 @@ function validateSeedRoutes(routes: SeedRoute[]) {
         if (!OBJECT_ID_REGEX.test(route._id)) {
             throw new Error('Invalid _id at index ' + index);
         }
+
+        if (!route.cover_image || !isValidUrl(route.cover_image)) {
+            throw new Error('Invalid cover_image at index ' + index);
+        }
     });
-}
-
-function isCompleteRoute(route: SeedRoute): boolean {
-    const hasRequiredStrings = !!route.name && !!route.description && !!route.city && !!route.country && !!route.userId;
-
-    const hasRequiredNumbers = typeof route.distance === 'number' && typeof route.duration === 'number';
-
-    return hasRequiredStrings && hasRequiredNumbers;
 }
 
 function mapToInsertableRoute(route: SeedRoute) {
@@ -236,7 +255,7 @@ function mapToInsertableRoute(route: SeedRoute) {
         _id: route._id,
         name: route.name && route.name.trim().length > 0 ? route.name : ' ',
         description: route.description && route.description.trim().length > 0 ? route.description : ' ',
-        cover_image: route.cover_image && route.cover_image.trim().length > 0 ? route.cover_image : DEFAULT_COVER_IMAGE,
+        cover_image: route.cover_image,
         city: route.city && route.city.trim().length > 0 ? route.city : ' ',
         country: route.country && route.country.trim().length > 0 ? route.country : ' ',
         distance: typeof route.distance === 'number' ? route.distance : 0,
