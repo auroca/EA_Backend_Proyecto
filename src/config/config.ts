@@ -1,8 +1,30 @@
 import dotenv from 'dotenv';
+import fs from 'fs';
+import path from 'path';
 
 dotenv.config();
 
-const MONGO_URL = process.env.MONGO_URI || 'mongodb://localhost:27017/trip2guide';
+const dockerProfile = process.env.DOCKER_PROFILE || 'development';
+dotenv.config({
+    path: path.resolve(process.cwd(), '../../DockerProject/EA_DockerCompose', `.env.${dockerProfile}`)
+});
+
+const isRunningInDocker = process.env.RUNNING_IN_DOCKER === 'true' || fs.existsSync('/.dockerenv');
+const resolveMongoUrl = () => {
+    const mongoUri = process.env.MONGO_URI;
+
+    if (!mongoUri) {
+        return 'mongodb://localhost:27017/trip2guide';
+    }
+
+    if (!isRunningInDocker && mongoUri.includes('://mongodb:')) {
+        return mongoUri.replace('://mongodb:', '://localhost:');
+    }
+
+    return mongoUri;
+};
+
+const MONGO_URL = resolveMongoUrl();
 const SERVER_PORT = process.env.SERVER_PORT ? Number(process.env.SERVER_PORT) : 1337;
 
 const JWT_ACCESS_SECRET = process.env.JWT_ACCESS_SECRET || 'clave_super_secreta_para_access_123';

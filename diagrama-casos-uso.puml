@@ -1,0 +1,78 @@
+@startuml
+left to right direction
+
+skinparam shadowing false
+skinparam packageStyle rectangle
+skinparam linetype ortho
+
+actor "Visitant" as Visitant
+actor "Usuari\nregistrat" as Usuari
+actor "Administrador\nBackoffice" as Admin
+actor "Serveis de mapes" as Maps
+actor "Firebase" as Firebase
+
+Visitant <|-- Usuari
+Usuari <|-- Admin
+
+rectangle "Sistema Trip2Guide" {
+
+  usecase "Iniciar sessió" as Login
+  usecase "Registrar-se" as Register
+
+  usecase "Consultar rutes" as Consult
+  usecase "Cercar i filtrar rutes" as Search
+  usecase "Visualitzar ruta\nal mapa" as ViewMap
+
+  usecase "Consultar\nreviews" as ViewReviews
+  usecase "Crear review" as CreateReview
+  usecase "Editar review\npròpia" as EditReview
+  usecase "Eliminar review\npròpia" as DeleteOwnReview
+
+  usecase "Crear ruta" as CreateRoute
+  usecase "Editar ruta" as EditRoute
+  usecase "Eliminar ruta\npròpia" as DeleteOwnRoute
+
+  usecase "Rebre\nnotificacions" as Notifications
+
+  usecase "Gestionar\nusuaris" as ManageUsers
+  usecase "Gestionar\nrutes" as ManageRoutes
+  usecase "Gestionar\nreviews" as ManageReviews
+  usecase "Eliminar\ncontingut" as DeleteContent
+}
+
+Visitant -- Login
+Visitant -- Register
+Visitant -- Consult
+Visitant -- Search
+Visitant -- ViewMap
+Visitant -- ViewReviews
+
+Usuari -- CreateRoute
+Usuari -- EditRoute
+Usuari -- DeleteOwnRoute
+Usuari -- CreateReview
+Usuari -- EditReview
+Usuari -- DeleteOwnReview
+Usuari -- Notifications
+
+Admin -- ManageUsers
+Admin -- ManageRoutes
+Admin -- ManageReviews
+Admin -- DeleteContent
+
+ViewMap -- Maps
+Notifications -- Firebase
+
+note bottom of CreateRoute
+Precondició: usuari autenticat
+end note
+
+note bottom of CreateReview
+Precondició: usuari autenticat
+end note
+
+note bottom of ManageUsers
+Precondició: administrador autenticat
+end note
+
+@enduml
