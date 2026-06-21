@@ -9,6 +9,7 @@ export interface IRoute {
     distance: number;
     duration: number;
     difficulty: 'easy' | 'medium' | 'hard';
+    wheelchairAccessible: boolean;
     tags: string[];
     userId: string;
 }
@@ -29,6 +30,7 @@ const RouteSchema: Schema = new Schema(
             enum: ['easy', 'medium', 'hard'],
             required: true
         },
+        wheelchairAccessible: { type: Boolean, default: false, required: true },
         tags: [{ type: String }],
         userId: {
             type: Schema.Types.ObjectId,

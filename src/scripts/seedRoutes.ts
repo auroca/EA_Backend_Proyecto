@@ -16,6 +16,7 @@ type SeedRoute = {
     distance?: number;
     duration?: number;
     difficulty: 'easy' | 'medium' | 'hard';
+    wheelchairAccessible?: boolean;
     tags?: string[];
     userId: string;
 };
@@ -261,6 +262,7 @@ function mapToInsertableRoute(route: SeedRoute) {
         distance: typeof route.distance === 'number' ? route.distance : 0,
         duration: typeof route.duration === 'number' ? route.duration : 0,
         difficulty: route.difficulty,
+        wheelchairAccessible: route.wheelchairAccessible ?? false,
         tags: route.tags || [],
         userId: route.userId
     };

@@ -4,7 +4,7 @@ import ReviewModel from '../models/Review';
 import HistoryService from './History';
 import { ListResult, ServiceResult } from '../types/ServiceResult';
 
-const ROUTE_FIELDS = ['name', 'description', 'cover_image', 'city', 'country', 'distance', 'duration', 'difficulty', 'tags', 'userId'];
+const ROUTE_FIELDS = ['name', 'description', 'cover_image', 'city', 'country', 'distance', 'duration', 'difficulty', 'wheelchairAccessible', 'tags', 'userId'];
 const POINT_FIELDS = ['name', 'description', 'latitude', 'longitude', 'image', 'routeId', 'index'];
 
 type PaginationLimit = 10 | 25 | 50;
@@ -214,6 +214,10 @@ const getAllRoutes = async (pagination?: PaginationParams, filter?: Record<strin
     }
 };
 
+const getWheelchairAccessibleRoutes = async (pagination?: PaginationParams): Promise<ServiceResult<ListResult<RouteResponse>>> => {
+    return getAllRoutes(pagination, { wheelchairAccessible: true });
+};
+
 const getRoutesInsidePolygon = async (coordinates: PolygonCoordinate[]): Promise<ServiceResult<RouteResponse[]>> => {
     try {
         if (!Array.isArray(coordinates) || coordinates.length < 3) {
@@ -376,6 +380,7 @@ export default {
     createRoute,
     getRoute,
     getAllRoutes,
+    getWheelchairAccessibleRoutes,
     getRoutesInsidePolygon,
     updateRoute,
     deleteRoute

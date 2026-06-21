@@ -53,6 +53,7 @@ const readAll = async (req: Request, res: Response, next: NextFunction) => {
             { name: 'distance', type: 'number' },
             { name: 'duration', type: 'number' },
             { name: 'difficulty', type: 'string' },
+            { name: 'wheelchairAccessible', type: 'boolean' },
             { name: 'tags', type: 'stringArray' },
             { name: 'images', type: 'stringArray' },
             { name: 'userId', type: 'id' }
@@ -65,6 +66,21 @@ const readAll = async (req: Request, res: Response, next: NextFunction) => {
         }
 
         const result = await RouteService.getAllRoutes(pagination, filter);
+
+        if (result.success) {
+            return res.status(200).json(result.data);
+        }
+
+        return sendServiceError(res, result.error, result.statusCode);
+    } catch {
+        return sendServiceError(res, 'Unexpected server error');
+    }
+};
+
+const readWheelchairAccessible = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const pagination = parsePagination(req.query);
+        const result = await RouteService.getWheelchairAccessibleRoutes(pagination);
 
         if (result.success) {
             return res.status(200).json(result.data);
@@ -160,6 +176,7 @@ export default {
     createRoute,
     readRoute,
     readAll,
+    readWheelchairAccessible,
     readInsidePolygon,
     updateRoute,
     deleteRoute

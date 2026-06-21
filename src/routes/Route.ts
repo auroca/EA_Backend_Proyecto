@@ -26,6 +26,9 @@ const router = express.Router();
  *         description:
  *           type: string
  *           example: "Ruta circular con vistas muy buenas"
+ *         cover_image:
+ *           type: string
+ *           example: "https://cdn.example.com/routes/montserrat-cover.jpg"
  *         city:
  *           type: string
  *           example: "Barcelona"
@@ -42,6 +45,9 @@ const router = express.Router();
  *           type: string
  *           enum: [easy, medium, hard]
  *           example: "medium"
+ *         wheelchairAccessible:
+ *           type: boolean
+ *           example: true
  *         tags:
  *           type: array
  *           items:
@@ -66,6 +72,7 @@ const router = express.Router();
  *       required:
  *         - name
  *         - description
+ *         - cover_image
  *         - city
  *         - country
  *         - distance
@@ -78,6 +85,9 @@ const router = express.Router();
  *         description:
  *           type: string
  *           example: "Ruta circular con vistas muy buenas"
+ *         cover_image:
+ *           type: string
+ *           example: "https://cdn.example.com/routes/montserrat-cover.jpg"
  *         city:
  *           type: string
  *           example: "Barcelona"
@@ -94,6 +104,10 @@ const router = express.Router();
  *           type: string
  *           enum: [easy, medium, hard]
  *           example: "medium"
+ *         wheelchairAccessible:
+ *           type: boolean
+ *           default: false
+ *           example: true
  *         tags:
  *           type: array
  *           items:
@@ -114,6 +128,9 @@ const router = express.Router();
  *         description:
  *           type: string
  *           example: "Ruta circular con vistas muy buenas"
+ *         cover_image:
+ *           type: string
+ *           example: "https://cdn.example.com/routes/montserrat-cover.jpg"
  *         city:
  *           type: string
  *           example: "Barcelona"
@@ -130,6 +147,9 @@ const router = express.Router();
  *           type: string
  *           enum: [easy, medium, hard]
  *           example: "hard"
+ *         wheelchairAccessible:
+ *           type: boolean
+ *           example: false
  *         tags:
  *           type: array
  *           items:
@@ -161,6 +181,8 @@ const router = express.Router();
  *               type: string
  *             description:
  *               type: string
+ *             cover_image:
+ *               type: string
  *             city:
  *               type: string
  *             country:
@@ -171,6 +193,8 @@ const router = express.Router();
  *               type: number
  *             difficulty:
  *               type: string
+ *             wheelchairAccessible:
+ *               type: boolean
  *             tags:
  *               type: string
  *             images:
@@ -180,7 +204,7 @@ const router = express.Router();
  *           additionalProperties: false
  *         description: |
  *           Filter object using `filter[field]=value`. Strings perform substring (case-insensitive).
- *           Numbers require exact match. For array fields (e.g. `tags`) a match occurs if any element contains the value.
+ *           Numbers and booleans require exact match. For array fields (e.g. `tags`) a match occurs if any element contains the value.
  *           Repeat `filter[field]` to OR multiple values for the same field. Combine different fields for AND.
  *       - in: query
  *         name: limit
@@ -243,6 +267,33 @@ router.get('/', ValidateQuery(Schemas.Route.listQuery), controller.readAll);
  *         description: Invalid polygon
  */
 router.post('/inside-polygon', controller.readInsidePolygon);
+
+/**
+ * @openapi
+ * /routes/wheelchair-accessible:
+ *   get:
+ *     summary: List wheelchair accessible Routes
+ *     tags: [routes]
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           enum: [10, 25, 50]
+ *         description: Page size. Use together with page to enable pagination.
+ *       - in: query
+ *         name: page
+ *         required: false
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *         description: Page number. Use together with limit to enable pagination.
+ *     responses:
+ *       200:
+ *         description: OK. Returns only routes where wheelchairAccessible is true.
+ */
+router.get('/wheelchair-accessible', ValidateQuery(Schemas.Route.wheelchairAccessibleQuery), controller.readWheelchairAccessible);
 
 /**
  * @openapi
