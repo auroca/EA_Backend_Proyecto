@@ -107,14 +107,17 @@ const registerConnectionEvents = (socket: Socket<ClientToServerEvents, ServerToC
                 return;
             }
 
+            const savedMessage = result.data.chatHistory[result.data.chatHistory.length - 1];
+
             // Broadcast message to all users in the chat room
             const chatRoom = getChatRoomByChatId(chatId);
             const socketServer = getSocketServer();
             socketServer.to(chatRoom).emit('chat:message', {
                 chat_id: chatId,
+                user_id: socket.data.user_id,
                 username,
                 message,
-                timestamp: new Date()
+                timestamp: savedMessage?.timestamp ?? new Date()
             });
 
             Logging.info(`Chat message - CHAT_ID: [${chatId}] - USERNAME: [${username}] - MESSAGE: [${message}]`);

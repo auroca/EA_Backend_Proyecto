@@ -421,4 +421,6 @@ router.delete('/:chatId', authenticateToken, authorizeChatParticipantOrAdmin, co
  */
 router.post('/:chatId/messages', authenticateToken, authorizeChatParticipantOrAdmin, ValidateJoi(Schemas.Chat.message), controller.addMessage);
 
+router.post('/:chatId/read', authenticateToken, authorizeChatParticipantOrAdmin, controller.markChatRead);
+
 export default router;
