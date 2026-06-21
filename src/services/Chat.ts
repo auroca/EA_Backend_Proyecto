@@ -254,15 +254,26 @@ const joinChat = async (chatId: string, userId: string, password: string): Promi
         }
 
         if (chat.password && chat.password !== password) {
-            return { success: false, error: 'Invalid password', statusCode: 401 };
+            return { success: false, error: 'Invalid password', statusCode: 403 };
         }
 
-        chat.participants.push(new mongoose.Types.ObjectId(userId));
-        chat.readStates.push({
-            userId: new mongoose.Types.ObjectId(userId),
-            lastReadAt: new Date()
-        });
-        await chat.save();
+        const userObjectId = new mongoose.Types.ObjectId(userId);
+
+        await Chat.updateOne(
+            {
+                _id: chat._id,
+                participants: { $ne: userObjectId }
+            },
+            {
+                $addToSet: { participants: userObjectId },
+                $push: {
+                    readStates: {
+                        userId: userObjectId,
+                        lastReadAt: new Date()
+                    }
+                }
+            }
+        ).exec();
 
         return await getChat(chatId);
     } catch {
