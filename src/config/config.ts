@@ -1,13 +1,7 @@
-import dotenv from 'dotenv';
 import fs from 'fs';
-import path from 'path';
+import { loadEnvironment } from './env';
 
-dotenv.config();
-
-const dockerProfile = process.env.DOCKER_PROFILE || 'development';
-dotenv.config({
-    path: path.resolve(process.cwd(), '../../DockerProject/EA_DockerCompose', `.env.${dockerProfile}`)
-});
+loadEnvironment();
 
 const isRunningInDocker = process.env.RUNNING_IN_DOCKER === 'true' || fs.existsSync('/.dockerenv');
 const resolveMongoUrl = () => {
