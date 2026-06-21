@@ -1,21 +1,25 @@
-import mongoose, { Document, Schema } from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
+
+export interface IChatMessage {
+    userId: mongoose.Types.ObjectId;
+    message: string;
+    timestamp: Date;
+}
+
+export interface IChatReadState {
+    userId: mongoose.Types.ObjectId;
+    lastReadAt: Date;
+}
 
 export interface IChat {
     name: string;
     participants: mongoose.Types.ObjectId[];
-    chatHistory: {
-        userId: mongoose.Types.ObjectId;
-        message: string;
-        timestamp: Date;
-    }[];
-    readStates: {
-        userId: mongoose.Types.ObjectId;
-        lastReadAt: Date;
-    }[];
+    chatHistory: IChatMessage[];
+    readStates: IChatReadState[];
     password: string | null;
 }
 
-export interface IChatModel extends IChat, Document {}
+export type IChatModel = mongoose.HydratedDocument<IChat>;
 
 const ChatSchema: Schema = new Schema(
     {
