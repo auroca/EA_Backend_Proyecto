@@ -6,6 +6,22 @@ export type ChatSummary = {
     _id: string;
     name: string;
     hasPassword: boolean;
+    unreadCount?: number;
+};
+
+type ChatSummaryDocument = {
+    _id: mongoose.Types.ObjectId;
+    name: string;
+    participants?: mongoose.Types.ObjectId[];
+    chatHistory?: {
+        userId: mongoose.Types.ObjectId;
+        timestamp: Date;
+    }[];
+    readStates?: {
+        userId: mongoose.Types.ObjectId;
+        lastReadAt: Date;
+    }[];
+    password?: string | null;
 };
 
 type PaginationLimit = 10 | 25 | 50;
@@ -31,7 +47,11 @@ const createChat = async (data: Partial<IChat>): Promise<ServiceResult<IChatMode
 
         const chat = new Chat({
             _id: new mongoose.Types.ObjectId(),
-            ...data
+            ...data,
+            readStates: data.participants?.map((participantId) => ({
+                userId: participantId,
+                lastReadAt: new Date()
+            }))
         });
 
         const savedChat = await chat.save();
@@ -39,6 +59,21 @@ const createChat = async (data: Partial<IChat>): Promise<ServiceResult<IChatMode
     } catch {
         return { success: false, error: 'Internal data server error' };
     }
+};
+
+const getUnreadCountForUser = (chat: ChatSummaryDocument, userId?: string): number | undefined => {
+    if (!userId || !chat.participants?.some((participantId) => String(participantId) === userId)) {
+        return undefined;
+    }
+
+    const readState = chat.readStates?.find((state) => String(state.userId) === userId);
+    const lastReadAt = readState?.lastReadAt ? new Date(readState.lastReadAt) : new Date(0);
+
+    return (chat.chatHistory ?? []).filter((entry) => {
+        const sentByCurrentUser = String(entry.userId) === userId;
+        const sentAfterLastRead = new Date(entry.timestamp).getTime() > lastReadAt.getTime();
+        return !sentByCurrentUser && sentAfterLastRead;
+    }).length;
 };
 
 const getChat = async (chatId: string): Promise<ServiceResult<IChatModel>> => {
@@ -74,11 +109,11 @@ const getAllChats = async (pagination?: PaginationParams, filter?: Record<string
     }
 };
 
-const getAllChatsSummary = async (pagination?: PaginationParams, filter?: Record<string, unknown>): Promise<ServiceResult<ChatSummary[]>> => {
+const getAllChatsSummary = async (pagination?: PaginationParams, filter?: Record<string, unknown>, currentUserId?: string): Promise<ServiceResult<ChatSummary[]>> => {
     try {
         const effectiveFilter = filter && Object.keys(filter).length ? filter : {};
 
-        const query = Chat.find(effectiveFilter).sort({ _id: 1 }).select('_id name').select('+password').lean<{ _id: mongoose.Types.ObjectId; name: string; password?: string | null }[]>();
+        const query = Chat.find(effectiveFilter).sort({ _id: 1 }).select('_id name participants chatHistory.userId chatHistory.timestamp readStates').select('+password').lean<ChatSummaryDocument[]>();
 
         if (pagination) {
             const { limit, page } = pagination;
@@ -93,7 +128,8 @@ const getAllChatsSummary = async (pagination?: PaginationParams, filter?: Record
             data: chats.map((chat) => ({
                 _id: String(chat._id),
                 name: chat.name,
-                hasPassword: typeof chat.password === 'string' && chat.password.length > 0
+                hasPassword: typeof chat.password === 'string' && chat.password.length > 0,
+                unreadCount: getUnreadCountForUser(chat, currentUserId)
             }))
         };
     } catch {
@@ -131,28 +167,67 @@ const deleteChat = async (chatId: string): Promise<ServiceResult<IChatModel>> =>
 
 const addMessage = async (chatId: string, userId: string, message: string): Promise<ServiceResult<IChatModel>> => {
     try {
-        const chat = await Chat.findByIdAndUpdate(
-            chatId,
-            {
-                $push: {
-                    chatHistory: {
-                        userId,
-                        message,
-                        timestamp: new Date()
-                    }
-                }
-            },
-            { new: true }
-        )
-            .populate('participants', 'username name')
-            .populate('chatHistory.userId', 'username name')
-            .exec();
+        const timestamp = new Date();
+        const chat = await Chat.findById(chatId).exec();
 
         if (!chat) {
             return { success: false, error: `No chat found with ID: ${chatId}`, statusCode: 404 };
         }
 
-        return { success: true, data: chat };
+        chat.chatHistory.push({
+            userId: new mongoose.Types.ObjectId(userId),
+            message,
+            timestamp
+        });
+
+        const senderReadState = chat.readStates.find((state) => state.userId.toString() === userId);
+
+        if (senderReadState) {
+            senderReadState.lastReadAt = timestamp;
+        } else {
+            chat.readStates.push({
+                userId: new mongoose.Types.ObjectId(userId),
+                lastReadAt: timestamp
+            });
+        }
+
+        await chat.save();
+
+        const populatedChat = await Chat.findById(chatId).populate('participants', 'username name').populate('chatHistory.userId', 'username name').exec();
+
+        return { success: true, data: populatedChat ?? chat };
+    } catch {
+        return { success: false, error: 'Internal data server error' };
+    }
+};
+
+const markChatRead = async (chatId: string, userId: string): Promise<ServiceResult<IChatModel>> => {
+    try {
+        const userObjectId = new mongoose.Types.ObjectId(userId);
+        const now = new Date();
+        const chat = await Chat.findById(chatId).exec();
+
+        if (!chat) {
+            return { success: false, error: `No chat found with ID: ${chatId}`, statusCode: 404 };
+        }
+
+        const isParticipant = chat.participants.some((participantId) => participantId.toString() === userId);
+
+        if (!isParticipant) {
+            return { success: false, error: 'User is not a participant of this chat', statusCode: 403 };
+        }
+
+        const readState = chat.readStates.find((state) => state.userId.toString() === userId);
+
+        if (readState) {
+            readState.lastReadAt = now;
+        } else {
+            chat.readStates.push({ userId: userObjectId, lastReadAt: now });
+        }
+
+        await chat.save();
+
+        return await getChat(chatId);
     } catch {
         return { success: false, error: 'Internal data server error' };
     }
@@ -183,6 +258,10 @@ const joinChat = async (chatId: string, userId: string, password: string): Promi
         }
 
         chat.participants.push(new mongoose.Types.ObjectId(userId));
+        chat.readStates.push({
+            userId: new mongoose.Types.ObjectId(userId),
+            lastReadAt: new Date()
+        });
         await chat.save();
 
         return await getChat(chatId);
@@ -199,6 +278,7 @@ export default {
     updateChat,
     deleteChat,
     addMessage,
+    markChatRead,
     getChatsByUser,
     joinChat
 };

@@ -8,6 +8,10 @@ export interface IChat {
         message: string;
         timestamp: Date;
     }[];
+    readStates: {
+        userId: mongoose.Types.ObjectId;
+        lastReadAt: Date;
+    }[];
     password: string | null;
 }
 
@@ -32,6 +36,16 @@ const ChatSchema: Schema = new Schema(
                 },
                 message: { type: String, required: true },
                 timestamp: { type: Date, default: Date.now }
+            }
+        ],
+        readStates: [
+            {
+                userId: {
+                    type: Schema.Types.ObjectId,
+                    ref: 'User',
+                    required: true
+                },
+                lastReadAt: { type: Date, default: Date.now }
             }
         ],
         password: { type: String, default: null, select: false }

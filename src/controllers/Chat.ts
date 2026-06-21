@@ -63,7 +63,7 @@ const readAll = async (req: AuthRequest, res: Response, next: NextFunction) => {
             return res.status(400).json({ errors });
         }
 
-        const result = await ChatService.getAllChatsSummary(pagination, filter);
+        const result = await ChatService.getAllChatsSummary(pagination, filter, req.user?.id);
 
         if (result.success) {
             return res.status(200).json(result.data);
@@ -132,6 +132,23 @@ const addMessage = async (req: AuthRequest, res: Response, next: NextFunction) =
     return sendServiceError(res, result.error, result.statusCode);
 };
 
+const markChatRead = async (req: AuthRequest, res: Response, next: NextFunction) => {
+    const chatId = req.params.chatId ?? req.params.ChatId;
+    const userId = req.user?.id;
+
+    if (!isValidObjectId(chatId) || !userId) {
+        return res.status(400).json({ status: 'error', message: 'chatId is required' });
+    }
+
+    const result = await ChatService.markChatRead(chatId, userId);
+
+    if (result.success) {
+        return res.status(200).json(result.data);
+    }
+
+    return sendServiceError(res, result.error, result.statusCode);
+};
+
 const getChatsByUser = async (req: AuthRequest, res: Response, next: NextFunction) => {
     const userId = req.params.userId ?? req.params.UserId;
 
@@ -182,6 +199,7 @@ export default {
     updateChat,
     deleteChat,
     addMessage,
+    markChatRead,
     getChatsByUser,
     joinChat
 };
