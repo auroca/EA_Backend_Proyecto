@@ -267,7 +267,9 @@ router.get('/user/:userId', authenticateToken, authorizeSelfOrAdmin, ValidateQue
  *             schema:
  *               $ref: '#/components/schemas/Chat'
  *       401:
- *         description: Invalid password or unauthorized
+ *         description: Unauthorized
+ *       403:
+ *         description: Invalid password
  *       404:
  *         description: Chat not found
  *       422:
